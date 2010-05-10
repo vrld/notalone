@@ -1,0 +1,132 @@
+= OVERVIEW =
+0. Titel
+    You Are Not Alone In This World
+    oder kurz YANAW
+
+1. Konzept
+    YANAW ist ein 2d top down Labyrinth-Spiel, in der der Spieler mit seiner
+    Sterblichkeit konfrontiert wird. Der Spieler wird "wiedergeboren" und kann
+    auf den - oder Teile des - Fortschritts seiner vorhergehenden Inkarnation
+    zurueckgreifen.
+
+2. Game Flow
+    2D Top-Down-Labyrinthe, Uebergang durch Fade-Effekte
+
+3. Look and Feel
+    Retro Grafik mit Partikeleffekten, satte Farben gehen in grau ueber
+
+4. Levels
+    ~10 Labyrinthe, mit unterschiedlichen Mechaniken (s.u.), evtl. Leveleditor
+
+
+= GAMEPLAY und MECHANIKEN =
+
+== Gameplay ==
+1. Spielfluss
+    Zunaechst sieht der Spieler nur einen sehr kleinen Ausschnitt des Labyrinths,
+    es wird sehr nah an ihn herangezoomt. Je mehr das Labyrinth erforscht wird,
+    desto groesser wird der Ausschnitt, es wird heraus gezoomt.
+    Es wird ein "Logbuch" gefuehrt -- ein roter "Faden" zeichnet bereits gegangene
+    Wege. Der Faden verblasst langsam.
+    Nach einer gewissen Zeit (ca 2 Minuten) stirbt die Spielfigur. Am Ausgangspunkt
+    erscheint eine neue Spielfigur. Schalter und Objekte werden dadurch nicht
+    beeinflusst. Das Objekt, das die Spielfigur bei sich trug, erscheint am Ort
+    des Ablebens (ACHTUNG: keine Puzzle erstellen, die dadurch unloesbar werden).
+
+2. Ziel
+    Der Spieler versucht, aus dem Labyrinth zu entkommen.
+
+3. Mechaniken
+    Neben der simplen Erforschung des Labyrinths gibt es Hindernisse:
+      - Bloecke, die den Weg versperren,
+      - Tueren, die sich mit Schaltern oder Schlüsseln oeffnen lassen
+                    (XXX: eventuell keine Schlüssel)
+      - Waende, die im Boden verschwinden/auftauchen
+
+    Manche Hindernisse koennen nicht in einer Lebensspanne ueberwunden werden.
+
+== Steurung ==
+0. Spezielle Tasten
+    Escape - Beendet Level
+    P      - Pause
+
+1. Bewegung
+    Die Spielfigur wird mit den Pfeiltasten gesteuert.
+
+2. Bloecke
+    Bloecke werden mit gehaltener Leertaste manipuliert (ziehen, druecken).
+
+3. Schalter und Knoepfe
+    - Schalter werden wie Bloecke gehandhabt.
+    - Knoepfe werden durch darueberlaufen oder das abstellen von Bloecken aktiviert.
+
+4. Objekte aufnehmen, transportieren und ablegen
+    Aufnehmbare Objekte werden durch simples hinueberlaufen aufgenommen.
+    An der richtigen Stelle werden sie automatisch benutzt.
+    Druck auf die Taste 'c' laesst das Objekt fallen.
+    Es kann immer nur ein Objekt getragen werden.
+
+== Screen Flow ==
+1. Menu-screen
+    Titel
+    Buttons:
+    - Neues Spiel
+    - Level Auswahl
+
+2. Level Auswahl
+    - Thumbnails erforschter Labyrinthe
+
+3. Das Level
+
+4. Levelabschluss
+    Buttons:
+    - Naechster Level
+    - Ende
+
+= Technisch =
+1. Plattform: Cross-Platform (Win,Mac,Linux), wenig Systemanforderungen
+
+2. Engine: LOVE, ohne Box2D-Physik-Engine
+
+== Datenstrukturen ==
+1. Labyrinth:
+    2D Array mit Werten:
+        - Boden (0)
+        - Wand  (1)
+	2D Array mit Booleans:
+		- gesehen?
+
+2. Objekte
+    Dünn besiedelter 2D Array mit Referenzen auf Objekte:
+        - Schalter (Instanz)
+        - Knopf    (Instanz)
+        - Block    (Instanz)
+
+2.1 Schalter
+    - Status (an/aus)
+    - Array mit Positionen des Levels, die zu toggeln (0 <-> 1) sind
+    - Referenz auf Sprite: an
+    - Referenz auf Sprite: aus
+
+2.2 Knopf
+    - Referenz auf darüberliegendes Objekt oder nil
+    - Referenz auf Sprite
+
+2.3 Block
+    - Referenz auf Sprite
+
+3. Figur:
+    - Sprite
+    - Alter
+    - Position
+    - Richtung (zum Zeichnen)
+    - Refernz auf getragenes Objekt
+
+4. Faden:
+    Dünn besiedelter 2D Array mit Zahlenwert:
+        Alter
+    Wenn Alter > Max Alter, dann lösche Zelle
+
+    -- Alternative --
+    Decal-System aus Space Shooter, dann Brotkrumen statt
+    roter Faden
