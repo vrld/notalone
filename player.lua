@@ -1,108 +1,88 @@
 player = {
-    age         = 0,
-    lifespan    = 30,
-    startpos    = vector.new(0,0),
-    pos         = vector.new(0,0),
-    dir         = vector.new(1,0),
-    seen        = {},
-    zoom        = 10,
-    visibility_range = 3,
-    carried     = nil,
-    sprite      = nil,
-    keydelay    = 0,
+	age         = 0,
+	lifespan    = 30,
+	startpos    = vector.new(0,0),
+	pos         = vector.new(0,0),
+	dir         = vector.new(1,0),
+	seen        = {min=vector.new(0,0),max=vector.new(0,0)},
+	zoom        = 10,
+	carried     = nil,
+	sprite      = nil,
+	keydelay    = 0,
 	path_decal  = love.image.newImageData(30,30),
-    ref_level   = nil
+	ref_level   = nil
 }
 function player.init(level, start, lifespan)
-    player.ref_level = level
-    assert(start, "start position must be supplied")
-    player.startpos = start:clone()
-    player.lifespan = lifespan or 45
+	player.ref_level = level
+	assert(start, "start position must be supplied")
+	player.startpos = start:clone()
+	player.lifespan = lifespan or 45
 
-    -- TODO: nicer sprite
-    for x=0,29 do
-        for y=0,29 do
-            player.path_decal:setPixel(x,y, 100,0,0,255)
-        end
-    end
+	-- TODO: nicer sprite
+	for x=0,29 do
+		for y=0,29 do
+			player.path_decal:setPixel(x,y, 100,0,0,255)
+		end
+	end
 
-    player.reset()
-    player.update_seen()
+	player.reset()
 end
 
 function player.reset()
-    player.pos = player.startpos:clone()
-    player.age = 0
-    player.zoom = 10
+	player.pos = player.startpos:clone()
+	player.age = 0
+	player.seen.min = player.pos:clone()
+	player.seen.max = player.pos:clone()
+	player.zoom = 10
 end
 
 function player.pixelpos()
-    return player.pos * 32 + vector.new(16,16)
+	return player.pos * TILESIZE + vector.new(16,16)
 end
 
 function player.draw()
 	love.graphics.setColor(0,180,60)
-	love.graphics.rectangle('fill', player.pos.x*32, player.pos.y*32, 32, 32)
+	love.graphics.rectangle('fill', player.pos.x*TILESIZE, player.pos.y*TILESIZE, TILESIZE, TILESIZE)
 end
 
-function player.update(dt)
-    player.age = player.age + dt
-    if player.age > player.lifespan then
-        player.reset()
-    end
-
-    if player.keydelay <= 0 then
-        local pospre = player.pos:clone()
-        if love.keyboard.isDown('up') then
-            player.dir = vector.new(0,-1)
-        elseif love.keyboard.isDown('down') then
-            player.dir = vector.new(0,1)
-        elseif love.keyboard.isDown('left') then
-            player.dir = vector.new(-1,0)
-        elseif love.keyboard.isDown('right') then
-            player.dir = vector.new(1,0)
-        else
-            return
-        end
-        player.pos = player.pos + player.dir
-        if player.ref_level[player.pos.y][player.pos.x] == 0 then
-            player.pos = pospre
-        end
-        Decals.add(player.path_decal, 45, pospre*32 + vector.new(16,16))
-        player.keydelay = .2
-        player.update_seen()
-        player.zoom = math.max(math.min(10 - (player.pos - player.startpos):len(), player.zoom), 1)
-    else
-        player.keydelay = player.keydelay - dt
-    end
-end
-
-function player.update_seen()
-    -- TODO: refactor (metatables)
-	for x=-1,1 do
-		for y=-1,1 do
-			if player.seen[player.pos.y+y] then
-				player.seen[player.pos.y+y][player.pos.x+x] = true
-            else
-                player.seen[player.pos.y+y] = {[player.pos.x+x] = true}
-			end
-		end
+function player.update(dt, level)
+	player.age = player.age + dt
+	if player.age > player.lifespan then
+		player.reset()
 	end
-    local tmp = player.pos + player.dir
-    local fields = 1
-    while player.ref_level[tmp.y] and player.ref_level[tmp.y][tmp.x] ~= 0 and fields < player.visibility_range do
-        if not player.seen[tmp.y] then player.seen[tmp.y] = {} end
-        player.seen[tmp.y][tmp.x] = true
-        tmp = tmp + player.dir
-        fields = fields + 1
-    end
-    if not player.seen[tmp.y] then player.seen[tmp.y] = {} end
-    player.seen[tmp.y][tmp.x] = true
-end
 
-function player.has_seen(x,y)
-    if not player.seen[y] then
-        return false
-    end
-    return player.seen[y][x]
+	if player.keydelay <= 0 then
+		local pospre = player.pos:clone()
+		if love.keyboard.isDown('up') then
+			player.dir = vector.new(0,-1)
+		elseif love.keyboard.isDown('down') then
+			player.dir = vector.new(0,1)
+		elseif love.keyboard.isDown('left') then
+			player.dir = vector.new(-1,0)
+		elseif love.keyboard.isDown('right') then
+			player.dir = vector.new(1,0)
+		else
+			return
+		end
+		player.pos = player.pos + player.dir
+		if player.ref_level[player.pos.y][player.pos.x] == 0 then
+			player.pos = pospre
+			return
+		end
+
+		level:updateFog(player.pos, player.dir)
+		-- update zoom range
+		player.seen.min.x = math.min(player.seen.min.x, player.pos.x)
+		player.seen.min.y = math.min(player.seen.min.y, player.pos.y)
+		player.seen.max.x = math.max(player.seen.max.x, player.pos.x)
+		player.seen.max.y = math.max(player.seen.max.y, player.pos.y)
+		local delta = player.seen.max - player.seen.min
+		delta = math.max(delta.x, delta.y, delta:len())
+		player.zoom = math.max(10 - delta, 1)
+
+		Decals.add(player.path_decal, 45, pospre*TILESIZE + vector.new(16,16))
+		player.keydelay = .15
+	else
+		player.keydelay = player.keydelay - dt
+	end
 end
