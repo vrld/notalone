@@ -5,14 +5,15 @@ function Level.init()
 	Level.tiles.ground[1] = love.image.newImageData('images/ground0.png')
 	Level.tiles.ground[2] = love.image.newImageData('images/ground1.png')
 	Level.tiles.ground[3] = love.image.newImageData('images/ground2.png')
+	Level.tiles.grave     = love.image.newImageData('images/grave.png')
 	for i=0,15 do
 		Level.tiles.wall[i] = love.image.newImageData(string.format('images/wall%02d.png', i))
 	end
-	Level.fog = love.graphics.newImage('images/fog.png')
+	Level.fog = love.graphics.newImage('images/fog2.png')
 end
 
 function Level.new(grid)
-	local lvl = setmetatable({grid = grid}, Level)
+	local lvl = setmetatable({grid = grid, graves={}}, Level)
 	lvl.fog = {}
 	local h,w = #lvl.grid, #lvl.grid[1]
 	for y=1,h do
@@ -128,6 +129,16 @@ function Level:updateFog(pos, dir, max, steps)
 	self:updateFog(pos+dir, dir, max, steps + 1)
 end
 
+function Level:die(pos)
+	self.graves[pos:clone()] = love.graphics.newImage(Level.tiles.grave)
+	for y=1,self.h do
+		self.fog[y] = {}
+		for x=1,self.w do
+			self.fog[y][x] = true
+		end
+	end
+end
+
 function Level:draw()
 	if not self.img then
 		self.img = love.graphics.newImage(self:render())
@@ -136,15 +147,29 @@ function Level:draw()
 	love.graphics.setColor(255,255,255)
 	love.graphics.draw(self.img,TILESIZE,TILESIZE)
 
-	-- draw fog
+	-- draw graves
+	for pos,img in pairs(self.graves) do
+		love.graphics.draw(img, (pos*32):unpack())
+	end
+end
+
+-- draw fog
+function Level:drawFog()
+	love.graphics.setColor(255,255,255)
 	local shift = vector.new(TILESIZE, TILESIZE) / 2
 	local pos
 	for y = 1,#self.fog do
 		for x = 1,#self.fog[y] do
 			if self.fog[y][x] then
-				math.randomseed(x+y)
+				math.randomseed(self.pixels.w * self.pixels.h + x * y)
 				pos = vector.new(x,y) * TILESIZE + shift
-				love.graphics.draw(Level.fog, pos.x, pos.y, math.random()*math.pi/2,1,1,28,28)
+				for i = 1,3 do
+					local s = math.random() * .4 + .8
+					love.graphics.draw(Level.fog, 
+						pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
+						math.random()*math.pi,
+						2,2, 16,16)
+				end
 			end
 		end
 	end
