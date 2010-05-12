@@ -9,18 +9,18 @@ player = {
 	carried     = nil,
 	sprite      = nil,
 	keydelay    = 0,
-	path_decal  = love.image.newImageData(30,30),
+	path_decal  = love.image.newImageData(10,10),
 	ref_level   = nil
 }
 function player.init(level, start, lifespan)
-	player.ref_level = level
+	player.ref_level = level.grid
 	assert(start, "start position must be supplied")
 	player.startpos = start:clone()
 	player.lifespan = lifespan or 45
 
 	-- TODO: nicer sprite
-	for x=0,29 do
-		for y=0,29 do
+	for x = 0,9 do
+		for y = 0,9 do
 			player.path_decal:setPixel(x,y, 100,0,0,255)
 		end
 	end
@@ -47,8 +47,11 @@ end
 
 function player.update(dt, level)
 	player.age = player.age + dt
+	-- die
 	if player.age > player.lifespan then
+		level:die(player.pos)
 		player.reset()
+        level:updateFog(player.pos,vector.new(0,0),1)
 	end
 
 	if player.keydelay <= 0 then
