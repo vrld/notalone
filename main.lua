@@ -1,5 +1,6 @@
 require "camera"
 require "decals"
+require "player"
 
 level = {
 --   1       5         10        15        20
@@ -25,28 +26,9 @@ level = {
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0}, -- 20
 }
 
-seen = {}
-for i,_ in ipairs(level) do
-	seen[i] = {}
-end
-
-player = vector.new(7,9)
-function update_seen(pos, dir)
-	for x=-1,1 do
-		for y=-1,1 do
-			if seen[pos.y+y] then
-				seen[pos.y+y][pos.x+x] = true
-			end
-		end
-	end
-end
-update_seen(player)
-max = vector.new(0,0)
-newzoom = 10
-
 images = {walls = {}}
 function love.load()
-	camera = Camera.new(player*44+vector.new(-15,8),1)
+	camera = Camera.new(player.pixelpos(),1)
 	love.graphics.setBackgroundColor(20,0,0)
 	decal = love.image.newImageData(30,30)
 	for x=0,29 do
@@ -61,6 +43,8 @@ function love.load()
 		images.walls[d] = love.graphics.newImage('images/wall'..d..'.png')
 	end
 	images.walls[''] = love.graphics.newImage('images/wall.png')
+
+    player.init(level, vector.new(7,9), 30)
 end
 
 function love.draw()
@@ -68,7 +52,7 @@ function love.draw()
 	love.graphics.setColor(255,255,255)
 	for y=1,#level do
 		for x=1,#level[y] do
-			if seen[y][x] then
+			if player.has_seen(x,y) then
 				if level[y][x] == 1 then
 					love.graphics.draw(images.ground, x*32, y*32, 0)
 				elseif level[y][x] == 2 then
@@ -87,39 +71,26 @@ function love.draw()
 		end
 	end
 	Decals.draw()
-	love.graphics.setColor(0,180,60)
-	love.graphics.rectangle('fill', player.x*32, player.y*32, 32, 32)
+    player.draw()
 	camera:postdraw()
-	love.graphics.print('len: ' .. tostring(max:len()), 10,10)
+
+    local frac = 1 - player.age / player.lifespan
+    local barwith = love.graphics.getWidth() - 20
+    love.graphics.setColor(255,255,255,100)
+    love.graphics.rectangle('fill', 10, 10, barwith, 7)
+    love.graphics.setColor(255,255,255)
+    love.graphics.rectangle('fill', 10, 10, frac*barwith, 7)
 end
 
 function love.update(dt)
 	Decals.update(dt)
-	camera.pos = camera.pos - (camera.pos - player*32 + vector.new(-16,-16)) * dt * 5
-	newzoom = math.max(9 - max:len(), .75)
-	camera.zoom = camera.zoom - (camera.zoom - newzoom) * dt
+	camera.pos = camera.pos - (camera.pos - player.pixelpos()) * dt * 5
+	camera.zoom = camera.zoom - (camera.zoom - player.zoom) * dt
 
-	if level[player.y][player.x] == 2 then
-		player = vector.new(7,9)
-		max = vector.new(0,0)
+    player.update(dt, level)
+
+	if level[player.pos.y][player.pos.x] == 2 then
+        -- TODO: fade
+		player.reset()
 	end
-end
-
-function love.keyreleased(key)
-	if key == 'left' and level[player.y][player.x-1] >= 1 then
-		player.x = player.x - 1
-	elseif key == 'right' and level[player.y][player.x+1] >= 1 then
-		player.x = player.x + 1
-	elseif key == 'up' and level[player.y-1][player.x] >= 1 then
-		player.y = player.y - 1
-	elseif key == 'down' and level[player.y+1][player.x] >= 1 then
-		player.y = player.y + 1
-	else
-		return
-	end
-	Decals.add(decal, 45,player*32+vector.new(16,16))
-	update_seen(player)
-
-	max.x = math.max(math.abs(player.x - 7), max.x)
-	max.y = math.max(math.abs(player.y - 9), max.y)
 end

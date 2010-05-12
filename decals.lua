@@ -2,8 +2,7 @@ require "vector"
 
 Decals = {items = {}}
 function Decals.add(img, life, pos, rot, scale)
-	local img = love.graphics.newImage(img)
-	Decals.items[img] = {
+	Decals.items[love.graphics.newImage(img)] = {
 		life = life,
 		time = 0,
 		pos = pos,
