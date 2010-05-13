@@ -11,6 +11,10 @@ function Decals.add(img, life, pos, rot, scale)
 	}
 end
 
+function Decals.clear()
+	Decals.items = {}
+end
+
 function Decals.update(dt)
 	for d, pl in pairs(Decals.items) do
 		pl.time = pl.time + dt
