@@ -15,25 +15,25 @@ function Gamestate.switch(to, ...)
 	if Gamestate.current then
 		Gamestate.current:leave()
 	end
-    local pre = Gamestate.current
+	local pre = Gamestate.current
 	Gamestate.current = to
 	Gamestate.current:enter(pre, ...)
 end
 
 function love.update(dt)
-    Gamestate.current:update(dt)
+	Gamestate.current:update(dt)
 end
 
 function love.keyreleased(key)
-    Gamestate.current:keyreleased(key)
+	Gamestate.current:keyreleased(key)
 end
 
 function love.mousereleased(btn,x,y)
-    Gamestate.current:mousereleased(btn,x,y)
+	Gamestate.current:mousereleased(btn,x,y)
 end
 
 function love.draw()
-    Gamestate.current:draw()
+	Gamestate.current:draw()
 	love.graphics.setColor(255,255,255)
 	love.graphics.print(string.format('FPS: %d', love.timer.getFPS()), 10,10)
 end

@@ -18,11 +18,9 @@ function player.init(level, start, lifespan)
 	player.startpos = start:clone()
 	player.lifespan = lifespan or 45
 
-	-- TODO: nicer sprite
-	for x = 0,9 do
-		for y = 0,9 do
-			player.path_decal:setPixel(x,y, 100,0,0,255)
-		end
+	-- TODO: nicer sprite - footsteps
+	for x,y in spatialrange(0,9, 0,9) do
+		player.path_decal:setPixel(x,y, 100,0,0,255)
 	end
 
 	player.reset()

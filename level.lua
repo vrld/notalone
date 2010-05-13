@@ -66,20 +66,16 @@ function Level:render()
 	end
 
 	-- postprocess
-	for x = 1,w-1 do -- blur vertical lines
-		for y = 0,h*TILESIZE-1 do
-			local l,k = {imgdata:getPixel(x*TILESIZE-1,y)},{imgdata:getPixel(x*TILESIZE,y)}
-			local r,g,b = (l[1]+k[1])/2, (l[2]+k[2])/2, (l[3]+k[3])/2
-		end
+	for x,y in spatialrange(1,w-1, 0,h*TILESIZE-1) do
+		local l,k = {imgdata:getPixel(x*TILESIZE-1,y)},{imgdata:getPixel(x*TILESIZE,y)}
+		local r,g,b = (l[1]+k[1])/2, (l[2]+k[2])/2, (l[3]+k[3])/2
 	end
-	for y = 1,h-1 do -- blur horizontal lines
-		for x = 0,w*TILESIZE-1 do
-			local l,r = {imgdata:getPixel(x,y*TILESIZE-1)},{imgdata:getPixel(x,y*TILESIZE)}
-			local r,g,b = (l[1]+r[1])/2, (l[2]+r[2])/2, (l[3]+r[3])/2
-			imgdata:setPixel(x,y*TILESIZE, r,g,b,255)
-		end
+	for y,x in spatialrange(1,h-1, 0,w*TILESIZE-1) do
+		local l,r = {imgdata:getPixel(x,y*TILESIZE-1)},{imgdata:getPixel(x,y*TILESIZE)}
+		local r,g,b = (l[1]+r[1])/2, (l[2]+r[2])/2, (l[3]+r[3])/2
+		imgdata:setPixel(x,y*TILESIZE, r,g,b,255)
 	end
-	-- darken edges
+	-- darken edges - TODO: refactor
 	local F = 20
 	for x = 0,w*TILESIZE-1 do
 		for y = 0,F do
@@ -118,11 +114,9 @@ function Level:updateFog(pos, dir, max, steps)
 		return
 	end
 
-	for i = -1,1 do
-		for k = -1,1 do
-			if self.fog[pos.y+i] then
-				self.fog[pos.y+i][pos.x+k] = false
-			end
+	for i,k in spatialrange(-1,1, -1,1) do
+		if self.fog[pos.y+i] then
+			self.fog[pos.y+i][pos.x+k] = false
 		end
 	end
 
@@ -131,9 +125,9 @@ end
 
 function Level:die(pos)
 	self.graves[pos:clone()] = love.graphics.newImage(Level.tiles.grave)
-	for y=1,self.h do
+	for y = 1,self.h do
 		self.fog[y] = {}
-		for x=1,self.w do
+		for x = 1,self.w do
 			self.fog[y][x] = true
 		end
 	end
@@ -146,8 +140,11 @@ function Level:draw()
 
 	love.graphics.setColor(255,255,255)
 	love.graphics.draw(self.img,TILESIZE,TILESIZE)
+end
 
+function Level:drawGraves()
 	-- draw graves
+	love.graphics.setColor(255,255,255)
 	for pos,img in pairs(self.graves) do
 		love.graphics.draw(img, (pos*32):unpack())
 	end
@@ -158,18 +155,16 @@ function Level:drawFog()
 	love.graphics.setColor(255,255,255)
 	local shift = vector.new(TILESIZE, TILESIZE) / 2
 	local pos
-	for y = 1,#self.fog do
-		for x = 1,#self.fog[y] do
-			if self.fog[y][x] then
-				math.randomseed(self.pixels.w * self.pixels.h + x * y)
-				pos = vector.new(x,y) * TILESIZE + shift
-				for i = 1,3 do
-					local s = math.random() * .4 + .8
-					love.graphics.draw(Level.fog, 
-						pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
-						math.random()*math.pi,
-						2,2, 16,16)
-				end
+	for y,x in spatialrange(1,#self.fog, 1,#self.fog[1]) do
+		if self.fog[y][x] then
+			math.randomseed(self.pixels.w * self.pixels.h + x * y)
+			pos = vector.new(x,y) * TILESIZE + shift
+			for i = 1,3 do
+				local s = math.random() * .4 + .8
+				love.graphics.draw(Level.fog, 
+					pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
+					math.random()*math.pi,
+					2,2, 16,16)
 			end
 		end
 	end
