@@ -15,11 +15,14 @@ end
 function Level.new(grid)
 	local lvl = setmetatable({grid = grid, graves={}}, Level)
 	lvl.fog = {}
+	lvl.fog_accum = {}
 	local h,w = #lvl.grid, #lvl.grid[1]
 	for y=1,h do
 		lvl.fog[y] = {}
+		lvl.fog_accum[y] = {}
 		for x=1,w do
 			lvl.fog[y][x] = true
+			lvl.fog_accum[y][x] = true
 		end
 	end
 	return lvl
@@ -117,6 +120,7 @@ function Level:updateFog(pos, dir, max, steps)
 	for i,k in spatialrange(-1,1, -1,1) do
 		if self.fog[pos.y+i] then
 			self.fog[pos.y+i][pos.x+k] = false
+			self.fog_accum[pos.y+i][pos.x+k] = false
 		end
 	end
 
@@ -125,11 +129,8 @@ end
 
 function Level:die(pos)
 	self.graves[pos:clone()] = love.graphics.newImage(Level.tiles.grave)
-	for y = 1,self.h do
-		self.fog[y] = {}
-		for x = 1,self.w do
-			self.fog[y][x] = true
-		end
+	for y,x in spatialrange(1,self.h, 1,self.w) do
+		self.fog[y][x] = true
 	end
 end
 
