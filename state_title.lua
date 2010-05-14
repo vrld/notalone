@@ -22,6 +22,7 @@ function st:leave()
 end
 
 function st:draw()
+
 	love.graphics.print('You Are Not Alone In This World', 200, 100)
 	love.graphics.print('Press [return] to start', 400, 300)
 end
@@ -31,6 +32,6 @@ end
 
 function st:keyreleased(key)
 	if key ~= 'return' then return end
-	local grid,start= Maze.new(15,15)
-	Gamestate.switch(state_play, grid, start, 100)
+	local grid,start= Maze.new(20,15)
+	Gamestate.switch(state_play, grid, start, 20)
 end
