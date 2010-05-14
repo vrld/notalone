@@ -6,22 +6,16 @@ player = {
 	dir         = vector.new(1,0),
 	seen        = {min=vector.new(0,0),max=vector.new(0,0)},
 	zoom        = 10,
-	carried     = nil,
-	sprite      = nil,
 	keydelay    = 0,
-	path_decal  = love.image.newImageData(10,10),
-	ref_level   = nil
+	ref_level   = nil,
+	lifes       = 0,
 }
 function player.init(level, start, lifespan)
 	player.ref_level = level.grid
 	assert(start, "start position must be supplied")
 	player.startpos = start:clone()
 	player.lifespan = lifespan or 45
-
-	-- TODO: nicer sprite - footsteps
-	for x,y in spatialrange(0,9, 0,9) do
-		player.path_decal:setPixel(x,y, 100,0,0,255)
-	end
+	player.lifes = 0
 
 	player.reset()
 end
@@ -29,8 +23,9 @@ end
 function player.reset()
 	player.pos = player.startpos:clone()
 	player.age = 0
-	player.seen.min = player.pos:clone()
-	player.seen.max = player.pos:clone()
+	player.lifes = player.lifes + 1
+	player.seen.min = player.pos - vector.new(1,1)
+	player.seen.max = player.pos + vector.new(1,1)
 	player.zoom = 10
 end
 
@@ -43,10 +38,24 @@ function player.draw()
 	love.graphics.rectangle('fill', player.pos.x*TILESIZE, player.pos.y*TILESIZE, TILESIZE, TILESIZE)
 end
 
+local n = 1
+function stepsprite()
+	n = n % 2 + 1
+	return string.format("images/footsteps%d.png", n)
+end
+
 function player.update(dt, level)
 	player.age = player.age + dt
+
+	-- spawn offspring, sort of
+	local frac = player.age / player.lifespan
+	if frac > .6 and frac < .7 then
+		player.startpos = player.pos
+	end
+
 	-- die
 	if player.age > player.lifespan then
+		player.lifespan = player.lifespan + 5
 		level:die(player.pos)
 		player.reset()
         level:updateFog(player.pos,vector.new(0,0),1)
@@ -73,15 +82,21 @@ function player.update(dt, level)
 
 		level:updateFog(player.pos, player.dir)
 		-- update zoom range
-		player.seen.min.x = math.min(player.seen.min.x, player.pos.x)
-		player.seen.min.y = math.min(player.seen.min.y, player.pos.y)
-		player.seen.max.x = math.max(player.seen.max.x, player.pos.x)
-		player.seen.max.y = math.max(player.seen.max.y, player.pos.y)
-		local delta = player.seen.max - player.seen.min
-		delta = math.max(delta.x, delta.y, delta:len())
-		player.zoom = math.max(10 - delta, 1)
+		player.seen.min.x = math.min(player.seen.min.x, player.pos.x-1)
+		player.seen.min.y = math.min(player.seen.min.y, player.pos.y-1)
+		player.seen.max.x = math.max(player.seen.max.x, player.pos.x+1)
+		player.seen.max.y = math.max(player.seen.max.y, player.pos.y+1)
+		local delta = (player.seen.max - player.seen.min) * TILESIZE
+		delta = math.min(love.graphics.getWidth()/delta.x, love.graphics.getHeight()/delta.y)
+		player.zoom = math.min(delta, 8)
 
-		Decals.add(player.path_decal, 45, pospre*TILESIZE + vector.new(16,16))
+		-- place footsteps
+		local phi = 0
+		if player.dir.x == -1 then phi = math.pi end
+		if player.dir.y ==  1 then phi = math.pi/2 end
+		if player.dir.y == -1 then phi = math.pi* 3/2 end
+
+		Decals.add(stepsprite(), 120, pospre*TILESIZE + vector.new(16,16), phi, .8, 160)
 		player.keydelay = .15
 	else
 		player.keydelay = player.keydelay - dt
