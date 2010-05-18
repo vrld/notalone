@@ -3,9 +3,14 @@ Level.__index = Level
 
 function Level.init()
 	Level.tiles.ground[1] = love.image.newImageData('images/ground0.png')
-	Level.tiles.ground[2] = love.image.newImageData('images/ground1.png')
-	Level.tiles.ground[3] = love.image.newImageData('images/ground2.png')
+	Level.tiles.ground[2] = Level.tiles.ground[1]
+	Level.tiles.ground[3] = Level.tiles.ground[1]
+	Level.tiles.ground[4] = Level.tiles.ground[1]
+	Level.tiles.ground[5] = Level.tiles.ground[1]
+	Level.tiles.ground[6] = love.image.newImageData('images/ground1.png')
+	Level.tiles.ground[7] = love.image.newImageData('images/ground2.png')
 	Level.tiles.grave     = love.image.newImageData('images/grave.png')
+	Level.tiles.exit      = love.image.newImageData('images/exit.png')
 	for i=0,15 do
 		Level.tiles.wall[i] = love.image.newImageData(string.format('images/wall%02d.png', i))
 	end
@@ -61,8 +66,10 @@ function Level:render()
 			local source = nil
 			if grid[y][x] == 0 then
 				source = tiles.wall[self:_tilenumber(x,y)]
-			else
-				source = tiles.ground[grid[y][x]]
+            elseif grid[y][x] ==  2 then
+				source = tiles.exit
+            else
+				source = tiles.ground[math.random(1,#tiles.ground)]
 			end
 			imgdata:paste(source, (x-1)*TILESIZE, (y-1)*TILESIZE, 0,0, TILESIZE,TILESIZE)
 		end
@@ -152,21 +159,29 @@ function Level:drawGraves()
 end
 
 -- draw fog
-function Level:drawFog()
+function Level:drawFog(bbx,bby,bbw,bbh)
+    -- compute fog range to draw
+    local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
+    local x1 = max(bbx and floor(bbx / TILESIZE) - 1 or 0, 1)
+    local y1 = max(bby and floor(bby / TILESIZE) - 1 or 0, 1)
+    local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 1 or math.huge, #self.fog[1])
+    local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 1 or math.huge, #self.fog)
+
 	love.graphics.setColor(255,255,255)
 	local shift = vector.new(TILESIZE, TILESIZE) / 2
 	local pos
-	for y,x in spatialrange(1,#self.fog, 1,#self.fog[1]) do
+	--for y,x in spatialrange(1,#self.fog, 1,#self.fog[1]) do
+	for y,x in spatialrange(y1,y2, x1,x2) do
 		if self.fog[y][x] then
 			math.randomseed(self.pixels.w * self.pixels.h + x * y)
 			pos = vector.new(x,y) * TILESIZE + shift
-			for i = 1,3 do
-				local s = math.random() * .4 + .8
-				love.graphics.draw(Level.fog, 
-					pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
-					math.random()*math.pi,
-					2,2, 16,16)
-			end
+            for i = 1,3 do
+                local s = math.random() * .4 + .8
+                love.graphics.draw(Level.fog, 
+                    pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
+                    math.random()*math.pi,
+                    2,2, 16,16)
+            end
 		end
 	end
 end

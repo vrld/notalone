@@ -10,6 +10,11 @@ function Camera:screencenter()
 	return vector.new(love.graphics.getWidth(), love.graphics.getHeight()) / self.zoom / 2
 end
 
+function Camera:rect()
+    local zw,zh = love.graphics.getWidth() / self.zoom, love.graphics.getHeight() / self.zoom
+    return self.pos.x - zw/2, self.pos.y - zh/2, zw, zh
+end
+
 function Camera:predraw()
 	love.graphics.push()
 	love.graphics.scale(self.zoom)

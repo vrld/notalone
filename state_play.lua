@@ -22,6 +22,7 @@ function st:enter(pre, grid, pos, life)
 	level:updateFog(pos, vector.new(0,0), 1)
 	img = love.graphics.newImage(level:render())
 	self.level = level
+    love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
 end
 
 function st:draw()
@@ -29,7 +30,7 @@ function st:draw()
 	level:draw()
 	Decals.draw()
 	level:drawGraves()
-	level:drawFog()
+	level:drawFog(camera:rect())
 	player.draw()
 	camera:postdraw()
 
