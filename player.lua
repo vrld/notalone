@@ -58,7 +58,7 @@ function player.update(dt, level)
 		player.lifespan = player.lifespan + 5
 		level:die(player.pos)
 		player.reset()
-        level:updateFog(player.pos,vector.new(0,0),1)
+		level:updateFog(player.pos,vector.new(0,0),1)
 	end
 
 	if player.keydelay <= 0 then
@@ -81,11 +81,11 @@ function player.update(dt, level)
 		end
 
 		level:updateFog(player.pos, player.dir)
-		-- update zoom range
-		player.seen.min.x = math.min(player.seen.min.x, player.pos.x-1)
-		player.seen.min.y = math.min(player.seen.min.y, player.pos.y-1)
-		player.seen.max.x = math.max(player.seen.max.x, player.pos.x+1)
-		player.seen.max.y = math.max(player.seen.max.y, player.pos.y+1)
+		-- update zoom range -- TODO: to fog range!
+		player.seen.min.x = math.min(player.seen.min.x, player.pos.x-2)
+		player.seen.min.y = math.min(player.seen.min.y, player.pos.y-2)
+		player.seen.max.x = math.max(player.seen.max.x, player.pos.x+2)
+		player.seen.max.y = math.max(player.seen.max.y, player.pos.y+2)
 		local delta = (player.seen.max - player.seen.min) * TILESIZE
 		delta = math.min(love.graphics.getWidth()/delta.x, love.graphics.getHeight()/delta.y)
 		player.zoom = math.min(delta, 8)

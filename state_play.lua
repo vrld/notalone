@@ -61,7 +61,9 @@ function st:update(dt)
 	if self.paused then return end
 
 	Decals.update(dt)
-	camera.pos = camera.pos - (camera.pos - player.pixelpos()) * dt * 5
+	local min,max = player.seen.min, player.seen.max
+	local center = ((max - min) / 2 + min) * TILESIZE + vector.new(TILESIZE/2, TILESIZE/2)
+	camera.pos = camera.pos - (camera.pos - center) * dt * 10
 	camera.zoom = camera.zoom - (camera.zoom - player.zoom) * dt
 
 	player.update(dt, level)
