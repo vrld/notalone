@@ -1,5 +1,6 @@
 require "gamestate.lua"
 require "state_title.lua"
+require "level.lua"
 
 TILESIZE = 32
 

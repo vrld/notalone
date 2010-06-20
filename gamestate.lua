@@ -28,8 +28,8 @@ function love.keyreleased(key)
 	Gamestate.current:keyreleased(key)
 end
 
-function love.mousereleased(btn,x,y)
-	Gamestate.current:mousereleased(btn,x,y)
+function love.mousereleased(x,y,btn)
+	Gamestate.current:mousereleased(x,y,btn)
 end
 
 function love.draw()
