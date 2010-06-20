@@ -1,5 +1,5 @@
 require "gamestate"
-require "state_play.lua"
+require "state_deus.lua"
 require "maze.lua"
 
 state_title = Gamestate.new()
@@ -27,11 +27,8 @@ function st:draw()
 	love.graphics.print('Press [return] to start', 400, 300)
 end
 
-function st:mousereleased(btn,x,y)
-end
-
 function st:keyreleased(key)
 	if key ~= 'return' then return end
 	local grid,start= Maze.new(20,15)
-	Gamestate.switch(state_play, grid, start, 20)
+	Gamestate.switch(state_deus, grid, start, 20)
 end
