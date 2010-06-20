@@ -27,11 +27,11 @@ end
 
 function send_world:draw()
 	love.graphics.setColor(255,255,255)
-	love.graphics.print(string.format("Sending world...",100,100))
+	love.graphics.print(string.format("Sending world..."),100,100)
 end
 
 function send_world:update(dt)
-	assert(coroutine.resume(self.sendworld, Deus.pipe.udp, world))
+	assert(coroutine.resume(self.sendworld, world))
 	if coroutine.status(self.sendworld) == "dead" then
 		substate = play
 	end
@@ -39,7 +39,6 @@ end
 
 function st:enter()
 	Deus.pipe = NetPipe.new(12345)
-	print(Deus.pipe)
 	love.graphics.setBackgroundColor(0,0,0)
 	world = Maze.new(40,30)
 	substate = wait_for_client

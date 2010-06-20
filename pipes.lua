@@ -1,6 +1,12 @@
 Pipe = {}
 Pipe.__index = Pipe
 
+local function strip_newline(s)
+	if not s then return end
+	-- asume newline!
+	return string.sub(s, 1,-2)
+end
+
 function Pipe.new()
 	return setmetatable({}, Pipe)
 end
@@ -50,7 +56,7 @@ function NetPipe:send(str, addr, port)
 end
 
 function NetPipe:receive()
-	return self.udp:receive()
+	return strip_newline(self.udp:receive())
 end
 
 function NetPipe:gettext()
@@ -67,7 +73,7 @@ function NetPipe:receive_and_bind()
 	if what and addr and port then
 		assert(self.udp:setpeername(addr, port))
 	end
-	return what
+	return strip_newline(what)
 end
 
 function NetPipe:unbind()
