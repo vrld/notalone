@@ -15,6 +15,6 @@ function spatialrange(a1,a2,b1,b2)
 end
 
 function love.load()
-    Level.init()
-    Gamestate.switch(state_title)
+	Level.init()
+	Gamestate.switch(state_title)
 end

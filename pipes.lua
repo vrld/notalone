@@ -34,7 +34,7 @@ end
 NetPipe = {}
 NetPipe.__index = NetPipe
 
-local socket = require("socket")
+local socket = require "socket"
 
 function NetPipe.new(port, addr)
 	local udp = assert(socket.udp())
