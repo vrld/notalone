@@ -144,6 +144,7 @@ end
 function Level:draw()
 	if not self.img then
 		self.img = love.graphics.newImage(self:render())
+		self.img:setFilter('nearest', 'nearest')
 	end
 
 	love.graphics.setColor(255,255,255)

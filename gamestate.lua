@@ -6,6 +6,7 @@ function Gamestate.new()
 		update         = function() end,
 		draw           = function() end,
 		keyreleased    = function() end,
+		keypressed     = function() end,
 		mousereleased  = function() end,
 	}
 end
@@ -22,6 +23,10 @@ end
 
 function love.update(dt)
 	Gamestate.current:update(dt)
+end
+
+function love.keypressed(key, unicode)
+	Gamestate.current:keypressed(key, unicode)
 end
 
 function love.keyreleased(key)

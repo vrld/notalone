@@ -26,13 +26,23 @@ function Button.new(text, center, size, font, onMouseEnter, onMouseLeave, onClic
 	local tw, th = btn.font:getWidth(text), btn.font:getHeight(text)
 	btn.textpos = center - vector.new(tw/2, th)
 
-	btn = setmetatable(btn, Button)
-	Button.buttons[btn] = btn
-	return btn
+	return setmetatable(btn, Button)
 end
 
-function Button.remove(btn)
+function Button.add(btn, ...)
+	if not btn then return end
+	Button.buttons[btn] = btn
+	Button.add(...)
+end
+
+function Button.remove(btn, ...)
+	if not btn then return end
 	Button.buttons[btn] = nil
+	Button.remove(...)
+end
+
+function Button.remove_all()
+	Button.buttons = {}
 end
 
 function Button:draw()
