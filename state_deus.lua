@@ -6,7 +6,7 @@ require "protocol"
 state_deus = Gamestate.new()
 local st = state_deus
 
-local substate, world, pipe
+local substate, world, startpos, pipe
 
 local wait_for_client = {alpha = 155, t = 0}
 local send_world = {}
@@ -31,16 +31,16 @@ function send_world:draw()
 end
 
 function send_world:update(dt)
-	assert(coroutine.resume(self.sendworld, world))
+	assert(coroutine.resume(self.sendworld, world, startpos))
 	if coroutine.status(self.sendworld) == "dead" then
 		substate = play
 	end
 end
 
-function st:enter(pre, port, maze, start)
+function st:enter(pre, port, maze, startpos)
 	Deus.pipe = NetPipe.new(port)
 	love.graphics.setBackgroundColor(0,0,0)
-	world = maze
+	world, start = maze, startpos
 	substate = wait_for_client
 
 	wait_for_client.handshake = coroutine.create(Deus.handshake)

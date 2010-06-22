@@ -22,7 +22,7 @@ local function makeDialogDeus()
     local btnOK = Button.new("OK", dlgDeus.pos + vector.new(260, 150), vector.new(110,40), font2)
     function btnOK.onClick() 
         dlgDeus:close()
-        Gamestate.switch(state_deus, tonumber(inpPort.text), Maze.new(40,30))
+        Gamestate.switch(state_deus, tonumber(inpPort.text), Maze.new(15,15))
     end
 
     local btnClose = Button.new("Cancel", dlgDeus.pos + vector.new(380, 150), vector.new(110,40), font2)
