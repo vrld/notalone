@@ -19,7 +19,7 @@ function Input.new(center, size, accept, font)
 	local inp = {
 		text    = "",
 		center  = center,
-		textpos = center,
+		textpos = center - vector.new(0,20),
 		pos     = center - size/2,
 		size    = size,
 		font    = font or love.graphics.getFont(),
@@ -27,7 +27,6 @@ function Input.new(center, size, accept, font)
 		active  = false}
 
 	inp = setmetatable(inp, Input)
-	Input.fields[inp] = inp
 	return inp
 end
 
@@ -68,7 +67,12 @@ function Input:draw()
 	else
 		Input.textcolor:set()
 	end
-	love.graphics.print(self.text, self.textpos:unpack())
+
+    if self.active and self.text:len() > 0 then
+        love.graphics.print(self.text .. "|", self.textpos:unpack())
+    else
+        love.graphics.print(self.text, self.textpos:unpack())
+    end
 end
 
 function Input:update(dt, down, mouse)
@@ -93,8 +97,12 @@ function Input:onKeyPressed(unicode)
 		self.text = self.text .. char
 	end
 
+    self:centerText()
+end
+
+function Input:centerText()
 	local tw, th = self.font:getWidth(self.text), self.font:getHeight(self.text)
-	self.textpos = self.center - vector.new(tw/2, th)
+	self.textpos = self.center - vector.new(tw/2, -10)
 end
 
 function Input.handleMouseDown(x,y,btn)
@@ -105,6 +113,13 @@ function Input.handleMouseDown(x,y,btn)
 end
 
 function Input.handleKeyPressed(unicode)
+    if unicode == 9 then -- tab, cycle to next input
+        for _,inp in pairs(Input.fields) do
+            if inp.active then
+                return inp.ontab and inp:ontab()
+            end
+        end
+    end
 	for _,inp in pairs(Input.fields) do
 		inp:onKeyPressed(unicode)
 	end

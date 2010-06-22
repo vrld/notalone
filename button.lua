@@ -24,7 +24,7 @@ function Button.new(text, center, size, font, onMouseEnter, onMouseLeave, onClic
 	btn.onClick      = onClick      or __NULLFUNCTION__
 
 	local tw, th = btn.font:getWidth(text), btn.font:getHeight(text)
-	btn.textpos = center - vector.new(tw/2, th)
+	btn.textpos = center - vector.new(tw/2, -th/2+5)
 
 	return setmetatable(btn, Button)
 end
