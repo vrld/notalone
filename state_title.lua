@@ -5,6 +5,7 @@ require "state_play"
 require "maze"
 require "button"
 require "input"
+require "dialog"
 
 state_title = Gamestate.new()
 local st = state_title
@@ -42,9 +43,22 @@ function st:enter()
 	end
 
 	Button.add(btnMortem, btnDeus, btnAlone)
-	local inpStuff = Input.new( vector.new(400,300), vector.new(400,40), font2 )
+	local inpStuff = Input.new( vector.new(400,300), vector.new(400,40), "[%d\.]", font2 )
 	inpStuff.active = true
 	Input.add(inpStuff)
+
+	dlg = Dialog.new([[YANAW Alpha -oo
+~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
+Nur zum Testen und so
+Dieser Dialog macht eigentlich keinen Sinn.
+Aber er funktioniert.
+Und darauf kommt es an.
+
+\o/ \o/ \o/ \o/ \o/ \o/ \o/ /o\ \o/ \o/
+
+Kirby: (~^o^)~
+]], vector.new(450, 300), font2)
+	dlg:open()
 end
 
 function st:leave()
@@ -59,6 +73,7 @@ end
 
 function st:draw()
 	love.graphics.setFont(font2)
+	love.graphics.setColor(0,0,0)
 	love.graphics.print('You Are Not Alone In This World', 200, 100)
 	Button.draw_all()
 	Input.draw_all()

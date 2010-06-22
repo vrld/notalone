@@ -63,12 +63,12 @@ function st:update(dt)
 	Decals.update(dt)
 	local min,max = player.seen.min, player.seen.max
 	local center = ((max - min) / 2 + min) * TILESIZE + vector.new(TILESIZE/2, TILESIZE/2)
-	camera.pos = camera.pos - (camera.pos - center) * dt * 10
-	camera.zoom = camera.zoom - (camera.zoom - player.zoom) * dt
+	camera.pos = camera.pos - (camera.pos - (.75 * center + .25 * player.pixelpos())) * dt * 10
+	camera.zoom = camera.zoom - (camera.zoom - player.zoom) * dt * 10
 
 	player.update(dt, level)
 	if level.grid[player.pos.y][player.pos.x] == 2 then
-		Gamestate.switch(state_won, player)
+		Gamestate.switch(state_won, player, camera)
 	end
 end
 

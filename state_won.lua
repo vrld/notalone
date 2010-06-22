@@ -10,7 +10,7 @@ local life = 20
 
 state_won = Gamestate.new()
 local st = state_won
-function st:enter(pre, player)
+function st:enter(pre, player, cam)
 	time = 0
 	level = pre.level
 	love.graphics.setBackgroundColor(0,0,0)
@@ -19,7 +19,7 @@ function st:enter(pre, player)
 	center = vector.new(level.pixels.w/2, level.pixels.h/2) + vector.new(TILESIZE,TILESIZE)
 	sc = math.min(love.graphics.getWidth()/level.pixels.w,
 	              love.graphics.getHeight()/level.pixels.h)
-	camera = Camera.new(player.pixelpos(), player.zoom)
+	camera = cam
 	level.fog = level.fog_accum
 
 	if player.lifes > 1 then

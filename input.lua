@@ -12,13 +12,19 @@ Input.textActive   = Input.bordercolor * 1.5
 Input.fields = {}
 
 local function __NULLFUNCTION__() end
-function Input.new(center, size, font)
+function Input.new(center, size, accept, font)
 	assert(center, "Input needs a center")
 	assert(size,   "Input needs a size")
 
-	local inp   = {text = "", center = center, pos = center - size/2, size = size, active = false}
-	inp.font    = font or love.graphics.getFont()
-	inp.textpos = center
+	local inp = {
+		text    = "",
+		center  = center,
+		textpos = center,
+		pos     = center - size/2,
+		size    = size,
+		font    = font or love.graphics.getFont(),
+		accept  = accept or "[^\n\t]",
+		active  = false}
 
 	inp = setmetatable(inp, Input)
 	Input.fields[inp] = inp
@@ -78,7 +84,14 @@ end
 
 function Input:onKeyPressed(unicode)
 	if not self.active then return false end
-	self.text = self.text .. string.char(unicode)
+
+	if unicode == 8 then -- backspace
+		self.text = self.text:sub(1,-2)
+	else
+		local char = string.char(unicode):match(self.accept)
+		if not char then return end
+		self.text = self.text .. char
+	end
 
 	local tw, th = self.font:getWidth(self.text), self.font:getHeight(self.text)
 	self.textpos = self.center - vector.new(tw/2, th)
