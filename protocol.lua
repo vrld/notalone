@@ -57,7 +57,7 @@ function Mortem.handshake()
 	return text == "qui es in caelis"
 end
 
-function Deus.sendworld(world)
+function Deus.sendworld(world, start)
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
 
@@ -94,6 +94,16 @@ function Deus.sendworld(world)
 	if params[1] == "Amen" and tonumber(params[2]) ~= checksum then
 		pipe:send("ERROR: wrong checksum!\n")
 		error("Wrong checksum")
+	elseif params[1] ~= "Amen" then
+		pipe:send("ERROR: cannot understand your gibberish\n")
+		error("Protocol error: strange reply when receiving world checksum")
+	end
+
+    pipe:send(string.format("On the next day, I made you:%s:%s\n", start.x, start.y))
+	params = pipe:gettext():split(":")
+	if params[1] == "Amen" and (tonumber(params[2]) ~= start.x or tonumber(params[3]) ~= start.y) then
+        pipe:send("ERROR: wrong position\n")
+		error("Wrong position")
 	elseif params[1] ~= "Amen" then
 		pipe:send("ERROR: cannot understand your gibberish\n")
 		error("Protocol error: strange reply when receiving world checksum")
@@ -156,13 +166,20 @@ function Mortem.getworld()
 
 	pipe:send(string.format("Amen:%d\n", world_checksum(world)))
 	text = pipe:gettext()
-	if text == "Amen" then -- success!
-		return world
+	if text ~= "Amen" then
+        error("Protocol error: Strange response on world checksum")
 	elseif text:sub(1,5) == "ERROR" then
 		error(text)
 	end
 
-	error("Protocol error: Strange response on world checksum")
+	params = pipe:gettext():split(":")
+    local start = vector.new(tonumber(params[2]), tonumber(params[3]))
+    pipe:send(string.format("Amen:%s:%s", start.x, start.y))
+	if params[1] == "Amen" then
+        return world, start
+	end
+
+    error("Protocol error: strange reply when receiving starting position")
 end
 
 function Mortem.move(x, y)

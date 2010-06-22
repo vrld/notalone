@@ -128,7 +128,9 @@ Welt senden:
 	M: "Amen:<checksum>"
 	D: "And I saw it was good"
 	M: "Amen:<global-checksum>"
-	D: "Amen"
+    D: "On the next day, I made you:<startx>:<starty>"
+    M: "Amen:<startx>:<starty>"
+    D: "Amen"
 
 	Fehler 1: checksum stimmt nicht.
 	D: "No, stupid"
