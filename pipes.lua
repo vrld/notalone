@@ -38,10 +38,11 @@ local socket = require "socket"
 
 function NetPipe.new(port, addr)
 	local udp = assert(socket.udp())
-	assert(udp:setsockname("*", port)) -- bind self to port
 
 	if addr then
 		assert(self.udp:setpeername(addr, port))
+    else
+        assert(udp:setsockname("*", port)) -- bind self to port
 	end
 
 	udp:settimeout(0) -- non blocking receive

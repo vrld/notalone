@@ -37,10 +37,10 @@ function send_world:update(dt)
 	end
 end
 
-function st:enter()
-	Deus.pipe = NetPipe.new(12345)
+function st:enter(pre, port, maze, start)
+	Deus.pipe = NetPipe.new(port)
 	love.graphics.setBackgroundColor(0,0,0)
-	world = Maze.new(40,30)
+	world = maze
 	substate = wait_for_client
 
 	wait_for_client.handshake = coroutine.create(Deus.handshake)

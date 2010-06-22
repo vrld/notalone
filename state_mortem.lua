@@ -18,7 +18,7 @@ end
 function connect:update(dt)
 	self.t = self.t + dt
 	self.alpha = 155 + math.sin(self.t) * 100
-	assert(coroutine.resume(self.handshake, Deus.pipe))
+	assert(coroutine.resume(self.handshake, Mortem.pipe))
 	if coroutine.status(self.handshake) == "dead" then
 		substate = get_world
 	end
@@ -37,10 +37,9 @@ function get_world:update(dt)
 	end
 end
 
-function st:enter()
-	Deus.pipe = NetPipe.new(12345, "127.0.0.1")
+function st:enter(pre, ip, port)
+	Mortem.pipe = NetPipe.new(port, ip)
 	love.graphics.setBackgroundColor(0,0,0)
-	world = Maze.new(40,30)
 	substate = connect
 
 	connect.handshake = coroutine.create(Mortem.handshake)
