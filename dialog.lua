@@ -11,6 +11,7 @@ Dialog.textcolor   = Color.new(50,50,50)
 function Dialog.new(size)
 	local dialog = {}
 	local center = vector.new(love.graphics.getWidth()/2, love.graphics.getHeight()/2)
+	dialog.center = center
 	dialog.size = size
 	dialog.pos  = center - size/2
 	return setmetatable(dialog, Dialog)

@@ -1,6 +1,7 @@
 require "gamestate"
 require "pipes"
 require "protocol"
+require "dialog"
 
 state_mortem = Gamestate.new()
 local st = state_mortem
@@ -51,7 +52,27 @@ function st:draw()
 end
 
 function st:update(dt)
-	substate:update(dt)
+	local all_ok, error = pcall(function() substate:update(dt) end)
+	if not all_ok then
+		local dlg = Dialog.new(vector.new(400,300))
+		local btn = Button.new("OK", dlg.center + vector.new(0,100), vector.new(100,40))
+		function btn:onClick()
+			dlg:close()
+			Gamestate.switch(state_title)
+		end
+
+		function dlg:draw()
+			love.graphics.print("Error occured:", dlg.pos.x + 10, dlg.pos.y + 30)
+			love.graphics.printf(error, dlg.pos.x + 15, dlg.pos.y + 60, 285)
+			btn:draw()
+		end
+
+		function dlg:update(dt)
+			btn:update(dt)
+		end
+
+		dlg:open()
+	end
 end
 
 function st:mousereleased(x,y,btn)
