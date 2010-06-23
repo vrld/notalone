@@ -113,38 +113,42 @@ Mortem (M), Deus (D)
 Jede Nachricht wird mit einem newline (\n) abgeschlossen
 
 Handshake:
-	M: "Pater Noster"
-	D: "qui es in caelis" --> Deus bindet auf M
+    M: "Pater Noster"
+    D: "qui es in caelis" --> Deus bindet auf M
 
 Welt senden:
-	D: "And thus I made the world:<width>:<height>"
-	M: "Amen:<width>:<height>"
-	D: "row:1:<1,1>:<1,2>:...:<1,width>:end"
-	M: "Amen:<checksum>"
-	D: "row:2:<2,1>:<2,2>:...:<2,width>:end"
-	M: "Amen:<checksum>"
-	....
-	D: "row:<height>:<height,1>:<height,2>:...:<height,width>:end"
-	M: "Amen:<checksum>"
-	D: "And I saw it was good"
-	M: "Amen:<global-checksum>"
+    D: "And thus I made the world:<width>:<height>"
+    M: "Amen:<width>:<height>"
+    D: "row:1:<1,1>:<1,2>:...:<1,width>:end"
+    M: "Amen:<checksum>"
+    D: "Amen"
+    D: "row:2:<2,1>:<2,2>:...:<2,width>:end"
+    M: "Amen:<checksum>"
+    D: "Amen"
+    ....
+    D: "row:<height>:<height,1>:<height,2>:...:<height,width>:end"
+    M: "Amen:<checksum>"
+    D: "Amen"
+    D: "And I saw it was good"
+    M: "Amen:<global-checksum>"
+    D: "Amen"
     D: "On the next day, I made you:<startx>:<starty>"
     M: "Amen:<startx>:<starty>"
     D: "Amen"
 
-	Fehler 1: checksum stimmt nicht.
-	D: "No, stupid"
-	Deus sendet gleiche row noch mal
+Fehler 1: checksum stimmt nicht.
+    D: "No, stupid"
+    Deus sendet gleiche row noch mal
 
-	Fehler 2: falsche globale checksum
-	D: "ERROR: wrong checksum"
-	Ende
+Fehler 2: falsche globale checksum
+    D: "ERROR: wrong checksum"
+    Ende
 
 Mortem sendet Bewegung:
-	M: "moveo:<x>:<y>"
+    M: "moveo:<x>:<y>"
 
 Deus sendet Zeit:
-	D: "tempus:<zeit>"
+    D: "tempus:<zeit>"
 
 Deus sendet Hinweis:
-	D: "signum:<x>:<y>:<num>"
+    D: "signum:<x>:<y>:<num>"

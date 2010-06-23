@@ -40,7 +40,7 @@ function NetPipe.new(port, addr)
 	local udp = assert(socket.udp())
 
 	if addr then
-		assert(self.udp:setpeername(addr, port))
+		assert(udp:setpeername(addr, port))
     else
         assert(udp:setsockname("*", port)) -- bind self to port
 	end

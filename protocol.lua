@@ -25,7 +25,7 @@ local function subtable(tbl, startindex)
 		if skip > 1 then return skip_start(skip-1, ...) end
 		return {v, ...}
 	end
-	return skip_start(s, unpack(tbl))
+	return skip_start(startindex, unpack(tbl))
 end
 
 Deus = {}
@@ -69,7 +69,7 @@ function Deus.sendworld(world, start)
 	end
 
 	local i = 1
-	while i < #world do
+	while i <= #world do
 		local row = world[i]
 		local checksum = row_checksum(unpack(row))
 		pipe:send(string.format("row:%d:%s:end\n", i, table.concat(row, ":")))
@@ -78,10 +78,11 @@ function Deus.sendworld(world, start)
 			if checksum ~= tonumber(params[2]) then
 				pipe:send("No, stupid\n")
 			else
+				pipe:send("Amen\n")
 				i = i + 1
 			end
 		elseif params[1] == "ERROR" then
-			error("Protocol error: "..params[2])
+			error("Protocol error: \""..params[2].."\"")
 		else
 			pipe:send("ERROR: unknown gibberish\n")
 			error("Protocol error: strange reply when sending world")
@@ -96,17 +97,19 @@ function Deus.sendworld(world, start)
 		error("Wrong checksum")
 	elseif params[1] ~= "Amen" then
 		pipe:send("ERROR: cannot understand your gibberish\n")
-		error("Protocol error: strange reply when receiving world checksum")
+		error("Protocol error: strange reply when receiving world checksum:\n'"..table.concat(params,":").."'")
 	end
+	pipe:send("Amen\n")
 
-    pipe:send(string.format("On the next day, I made you:%s:%s\n", start.x, start.y))
+	-- world sent, send starting position
+	pipe:send(string.format("On the next day, I made you:%s:%s\n", start.x, start.y))
 	params = pipe:gettext():split(":")
 	if params[1] == "Amen" and (tonumber(params[2]) ~= start.x or tonumber(params[3]) ~= start.y) then
-        pipe:send("ERROR: wrong position\n")
-		error("Wrong position")
+		pipe:send("ERROR: wrong position\n")
+		error("Wrong position: " .. params[2] .. ", " .. params[3])
 	elseif params[1] ~= "Amen" then
 		pipe:send("ERROR: cannot understand your gibberish\n")
-		error("Protocol error: strange reply when receiving world checksum")
+		error("Protocol error: strange reply when receiving starting position confirmation:\n'"..table.concat(params,":").."'")
 	end
 	pipe:send("Amen\n")
 	return true
@@ -122,9 +125,9 @@ function Mortem.getworld()
 		while true do
 			text = pipe:gettext()
 			rows[#rows+1] = text
-			if firstline and text:sub(4) ~= "row:" then
+			if firstline and text:sub(1,4) ~= "row:" then
 				pipe:send("ERROR: row expected\n")
-				error("wrong row format")
+				error("Wrong row format. got: '"..text.."'")
 			elseif text:sub(-4) == ":end" then
 				return table.concat(rows, ""):sub(5,-5):split(":")
 			end
@@ -139,8 +142,6 @@ function Mortem.getworld()
 	-- world header
 	if params[1] ~= "And thus I made the world" then return false end
 	pipe:send(string.format("Amen:%s:%s\n", params[2], params[3]))
-	text = pipe:gettext()
-	if text ~= "Amen" then error(text) end
 
 	local w, h = tonumber(params[2]), tonumber(params[3])
 	local world, row, gotten, n = {}, {}, 0
@@ -167,19 +168,22 @@ function Mortem.getworld()
 	pipe:send(string.format("Amen:%d\n", world_checksum(world)))
 	text = pipe:gettext()
 	if text ~= "Amen" then
-        error("Protocol error: Strange response on world checksum")
+		error("Protocol error: Strange response on world checksum: \n'"..text.."'")
 	elseif text:sub(1,5) == "ERROR" then
-		error(text)
+		error("Protocol error: \n" .. text)
 	end
 
+	-- world received successfully. get starting position
 	params = pipe:gettext():split(":")
-    local start = vector.new(tonumber(params[2]), tonumber(params[3]))
-    pipe:send(string.format("Amen:%s:%s", start.x, start.y))
-	if params[1] == "Amen" then
-        return world, start
+	local start = vector.new(tonumber(params[2]), tonumber(params[3]))
+	pipe:send(string.format("Amen:%s:%s\n", start.x, start.y))
+
+	text = pipe:gettext()
+	if text == "Amen" then
+		return world, start
 	end
 
-    error("Protocol error: strange reply when receiving starting position")
+	error("Protocol error: strange reply when receiving starting position: \n'"..table.concat(params,":").."'")
 end
 
 function Mortem.move(x, y)
