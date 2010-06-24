@@ -1,13 +1,13 @@
 Camera = {}
 Camera.__index = Camera
 function Camera.new(pos, zoom)
-	pos = pos or vector.new(love.graphics.getWidth(), love.graphics.getHeight()) / 2
+	pos = pos or vector(love.graphics.getWidth(), love.graphics.getHeight()) / 2
 	zoom = zoom or 1
 	return setmetatable({pos = pos, zoom = zoom}, Camera)
 end
 
 function Camera:screencenter()
-	return vector.new(love.graphics.getWidth(), love.graphics.getHeight()) / self.zoom / 2
+	return vector(love.graphics.getWidth(), love.graphics.getHeight()) / self.zoom / 2
 end
 
 function Camera:rect()
@@ -27,5 +27,5 @@ function Camera:postdraw()
 end
 
 function Camera:mousepos()
-	return vector.new(love.mouse.getPosition()) + self.pos
+	return vector(love.mouse.getPosition()) + self.pos
 end

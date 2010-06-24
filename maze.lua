@@ -24,7 +24,7 @@ function Maze.randomexit(grid,w,h)
 	else                         -- right
 		x, y = w, math.random(2,h-1)
 	end
-	return vector.new(x,y)
+	return vector(x,y)
 end
 
 function Maze.reachable(grid, start)
@@ -51,18 +51,18 @@ function Maze.carve(grid,w,h, start, exit)
 	local function randomdirection()
 		local dir = math.random()
 		if     dir < .25 then -- up
-			return vector.new(0,1)
+			return vector(0,1)
 		elseif dir < .5  then -- right
-			return vector.new(1,0)
+			return vector(1,0)
 		elseif dir < .75 then -- down
-			return vector.new(0,-1)
+			return vector(0,-1)
 		else                  -- left
-			return vector.new(-1,0)
+			return vector(-1,0)
 		end
 	end
 
 	local function carve_valid(cell, dir)
-		local ort = vector.new(dir.y, dir.x)
+		local ort = vector(dir.y, dir.x)
 
 		-- a carve from the exit is always valid
 		if grid[cell.y][cell.x] == 2 and
@@ -70,9 +70,9 @@ function Maze.carve(grid,w,h, start, exit)
 			return true
 		end
 
-		local tocheck = {vector.new(0,0), ort, -ort, dir, dir+ort, dir-ort}
+		local tocheck = {vector(0,0), ort, -ort, dir, dir+ort, dir-ort}
 		if math.random() > .8 then -- randomly allow loops
-			tocheck = {vector.new(0,0), dir+ort, dir-ort}
+			tocheck = {vector(0,0), dir+ort, dir-ort}
 		end
 		for _,c in pairs(tocheck) do
 			local t = cell + c
@@ -112,8 +112,8 @@ function Maze.carve(grid,w,h, start, exit)
 		end
 	end
 
-	carve(true, start, vector.new(0,0))
-	carve(true, exit, vector.new(0,0))
+	carve(true, start, vector(0,0))
+	carve(true, exit, vector(0,0))
 	reachable = Maze.reachable(grid, exit)
 	return carved == reachable
 end
@@ -127,10 +127,10 @@ function Maze.new(w,h, seed)
 		grid = Maze.initGrid(w,h)
 		exit = Maze.randomexit(grid,w,h)
 
-		local c = vector.new(w/2,h/2)
-		local r = vector.new(w/5,h/5)
+		local c = vector(w/2,h/2)
+		local r = vector(w/5,h/5)
 		repeat
-			enter = vector.new(math.random(c.x-r.x, c.x+r.x), math.random(c.y-r.y, c.y+r.y))
+			enter = vector(math.random(c.x-r.x, c.x+r.x), math.random(c.y-r.y, c.y+r.y))
 		until (enter-exit):len() > 10
 		grid[enter.y][enter.x] = 1
 		grid[exit.y][exit.x] = 2

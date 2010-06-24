@@ -16,7 +16,7 @@ function st:enter(pre, player, cam)
 	love.graphics.setBackgroundColor(0,0,0)
 	Decals.clear()
 
-	center = vector.new(level.pixels.w/2, level.pixels.h/2) + vector.new(TILESIZE,TILESIZE)
+	center = vector(level.pixels.w/2, level.pixels.h/2) + vector(TILESIZE,TILESIZE)
 	sc = math.min(love.graphics.getWidth()/level.pixels.w,
 	              love.graphics.getHeight()/level.pixels.h)
 	camera = cam

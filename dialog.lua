@@ -10,7 +10,7 @@ Dialog.textcolor   = Color.new(50,50,50)
 
 function Dialog.new(size)
 	local dialog = {}
-	local center = vector.new(love.graphics.getWidth()/2, love.graphics.getHeight()/2)
+	local center = vector(love.graphics.getWidth()/2, love.graphics.getHeight()/2)
 	dialog.center = center
 	dialog.size = size
 	dialog.pos  = center - size/2
@@ -47,4 +47,27 @@ function Dialog:close()
 	self.__update = nil
 
     return self.leave and self:leave()
+end
+
+function MessageBox(title, text, onOK)
+	local dlg = Dialog.new(vector(400,300))
+	local btn = Button.new("OK", dlg.center + vector(0,100), vector(100,40))
+	function btn:onClick()
+		dlg:close()
+		if onOK then
+			onOK()
+		end
+	end
+
+	function dlg:draw()
+		love.graphics.print(title, dlg.pos.x + 10, dlg.pos.y + 30)
+		love.graphics.printf(text, dlg.pos.x + 15, dlg.pos.y + 60, 285)
+		btn:draw()
+	end
+
+	function dlg:update(dt)
+		btn:update(dt)
+	end
+
+	dlg:open()
 end

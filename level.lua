@@ -66,9 +66,9 @@ function Level:render()
 			local source = nil
 			if grid[y][x] == 0 then
 				source = tiles.wall[self:_tilenumber(x,y)]
-            elseif grid[y][x] ==  2 then
+			elseif grid[y][x] ==  2 then
 				source = tiles.exit
-            else
+			else
 				source = tiles.ground[math.random(1,#tiles.ground)]
 			end
 			imgdata:paste(source, (x-1)*TILESIZE, (y-1)*TILESIZE, 0,0, TILESIZE,TILESIZE)
@@ -161,28 +161,28 @@ end
 
 -- draw fog
 function Level:drawFog(bbx,bby,bbw,bbh)
-    -- compute fog range to draw
-    local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
-    local x1 = max(bbx and floor(bbx / TILESIZE) - 1 or 0, 1)
-    local y1 = max(bby and floor(bby / TILESIZE) - 1 or 0, 1)
-    local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 1 or math.huge, #self.fog[1])
-    local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 1 or math.huge, #self.fog)
+	-- compute fog range to draw
+	local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
+	local x1 = max(bbx and floor(bbx / TILESIZE) - 1 or 0, 1)
+	local y1 = max(bby and floor(bby / TILESIZE) - 1 or 0, 1)
+	local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 1 or math.huge, #self.fog[1])
+	local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 1 or math.huge, #self.fog)
 
 	love.graphics.setColor(255,255,255)
-	local shift = vector.new(TILESIZE, TILESIZE) / 2
+	local shift = -vector(TILESIZE, TILESIZE) / 2
 	local pos
 	--for y,x in spatialrange(1,#self.fog, 1,#self.fog[1]) do
 	for y,x in spatialrange(y1,y2, x1,x2) do
 		if self.fog[y][x] then
 			math.randomseed(self.pixels.w * self.pixels.h + x * y)
-			pos = vector.new(x,y) * TILESIZE + shift
-            for i = 1,3 do
-                local s = math.random() * .4 + .8
-                love.graphics.draw(Level.fog, 
-                    pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
-                    math.random()*math.pi,
-                    2,2, 16,16)
-            end
+			pos = vector(x,y) * TILESIZE + shift
+			for i = 1,3 do
+				local s = math.random() * .4 + .8
+				love.graphics.draw(Level.fog,
+					pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
+					math.random()*math.pi,
+					2,2, 16,16)
+			end
 		end
 	end
 end

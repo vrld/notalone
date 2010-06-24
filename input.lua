@@ -19,7 +19,7 @@ function Input.new(center, size, accept, font)
 	local inp = {
 		text    = "",
 		center  = center,
-		textpos = center - vector.new(0,20),
+		textpos = center - vector(0,20),
 		pos     = center - size/2,
 		size    = size,
 		font    = font or love.graphics.getFont(),
@@ -102,7 +102,7 @@ end
 
 function Input:centerText()
 	local tw, th = self.font:getWidth(self.text), self.font:getHeight(self.text)
-	self.textpos = self.center - vector.new(tw/2, -10)
+	self.textpos = self.center - vector(tw/2, -10)
 end
 
 function Input.handleMouseDown(x,y,btn)

@@ -1,10 +1,12 @@
+require "vector"
+
 player = {
 	age         = 0,
 	lifespan    = 30,
-	startpos    = vector.new(0,0),
-	pos         = vector.new(0,0),
-	dir         = vector.new(1,0),
-	seen        = {min=vector.new(0,0),max=vector.new(0,0)},
+	startpos    = vector(0,0),
+	pos         = vector(0,0),
+	dir         = vector(1,0),
+	seen        = {min=vector(0,0),max=vector(0,0)},
 	zoom        = 10,
 	keydelay    = 0,
 	ref_level   = nil,
@@ -24,13 +26,13 @@ function player.reset()
 	player.pos = player.startpos:clone()
 	player.age = 0
 	player.lifes = player.lifes + 1
-	player.seen.min = player.pos - vector.new(1,1)
-	player.seen.max = player.pos + vector.new(1,1)
+	player.seen.min = player.pos - vector(1,1)
+	player.seen.max = player.pos + vector(1,1)
 	player.zoom = 10
 end
 
 function player.pixelpos()
-	return player.pos * TILESIZE + vector.new(16,16)
+	return player.pos * TILESIZE + vector(16,16)
 end
 
 function player.draw()
@@ -58,19 +60,19 @@ function player.update(dt, level)
 		player.lifespan = player.lifespan + 5
 		level:die(player.pos)
 		player.reset()
-		level:updateFog(player.pos,vector.new(0,0),1)
+		level:updateFog(player.pos,vector(0,0),1)
 	end
 
 	if player.keydelay <= 0 then
 		local pospre = player.pos:clone()
 		if love.keyboard.isDown('up') then
-			player.dir = vector.new(0,-1)
+			player.dir = vector(0,-1)
 		elseif love.keyboard.isDown('down') then
-			player.dir = vector.new(0,1)
+			player.dir = vector(0,1)
 		elseif love.keyboard.isDown('left') then
-			player.dir = vector.new(-1,0)
+			player.dir = vector(-1,0)
 		elseif love.keyboard.isDown('right') then
-			player.dir = vector.new(1,0)
+			player.dir = vector(1,0)
 		else
 			return
 		end
@@ -96,7 +98,7 @@ function player.update(dt, level)
 		if player.dir.y ==  1 then phi = math.pi/2 end
 		if player.dir.y == -1 then phi = math.pi* 3/2 end
 
-		Decals.add(stepsprite(), 120, pospre*TILESIZE + vector.new(16,16), phi, .8, 160)
+		Decals.add(stepsprite(), 120, pospre*TILESIZE + vector(16,16), phi, .8, 160)
 		player.keydelay = .15
 	else
 		player.keydelay = player.keydelay - dt

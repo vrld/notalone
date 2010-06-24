@@ -24,7 +24,7 @@ function Button.new(text, center, size, font, onMouseEnter, onMouseLeave, onClic
 	btn.onClick      = onClick      or __NULLFUNCTION__
 
 	local tw, th = btn.font:getWidth(text), btn.font:getHeight(text)
-	btn.textpos = center - vector.new(tw/2, -th/2+5)
+	btn.textpos = center - vector(tw/2, -th/2+5)
 
 	return setmetatable(btn, Button)
 end
@@ -70,7 +70,7 @@ function Button:draw()
 end
 
 function Button:update(dt, mouse)
-	local mouse = mouse or vector.new(love.mouse.getPosition())
+	local mouse = mouse or vector(love.mouse.getPosition())
 	local mouseOverButton = mouse.x >= self.pos.x and mouse.x <= self.pos.x + self.size.x and
 	                        mouse.y >= self.pos.y and mouse.y <= self.pos.y + self.size.y
 
@@ -92,7 +92,7 @@ function Button:update(dt, mouse)
 end
 
 function Button.update_all(dt)
-	local mouse = vector.new(love.mouse.getPosition())
+	local mouse = vector(love.mouse.getPosition())
 	for _,btn in pairs(Button.buttons) do
 		btn:update(dt, mouse)
 	end

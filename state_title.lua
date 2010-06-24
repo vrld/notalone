@@ -14,18 +14,18 @@ local font1,font2
 local dlgDeus, btnDeus, dlgMortem, btnMortem
 
 local function makeDialogDeus()
-    dlgDeus = Dialog.new(vector.new(450, 180))
-    local inpPort = Input.new(dlgDeus.pos + vector.new(270,80), vector.new(270,40), "%d", font2)
+    dlgDeus = Dialog.new(vector(450, 180))
+    local inpPort = Input.new(dlgDeus.pos + vector(270,80), vector(270,40), "%d", font2)
     inpPort.active, inpPort.text = true, "12345"
     inpPort:centerText()
 
-    local btnOK = Button.new("OK", dlgDeus.pos + vector.new(260, 150), vector.new(110,40), font2)
-    function btnOK.onClick() 
+    local btnOK = Button.new("OK", dlgDeus.pos + vector(260, 150), vector(110,40), font2)
+    function btnOK.onClick()
         dlgDeus:close()
-        Gamestate.switch(state_deus, tonumber(inpPort.text), Maze.new(15,15))
+        Gamestate.switch(state_deus, tonumber(inpPort.text), Maze.new(80,60))
     end
 
-    local btnClose = Button.new("Cancel", dlgDeus.pos + vector.new(380, 150), vector.new(110,40), font2)
+    local btnClose = Button.new("Cancel", dlgDeus.pos + vector(380, 150), vector(110,40), font2)
     function btnClose.onClick() 
         dlgDeus:close()
     end
@@ -46,29 +46,29 @@ local function makeDialogDeus()
         btnClose:update(dt)
     end
 
-    btnDeus = Button.new("Deus", vector.new(400,400), vector.new(400,40), font2)
+    btnDeus = Button.new("Deus", vector(400,400), vector(400,40), font2)
     btnDeus.onClick = function() dlgDeus:open() end
 end
 
 local function makeDialogMortem()
-    dlgMortem = Dialog.new(vector.new(450, 240))
-    local inpIP = Input.new(dlgMortem.pos + vector.new(270,80), vector.new(270,40), "[%d.]", font2)
+    dlgMortem = Dialog.new(vector(450, 240))
+    local inpIP = Input.new(dlgMortem.pos + vector(270,80), vector(270,40), "[%d.]", font2)
     inpIP.active, inpIP.text = true, "127.0.0.1"
     inpIP:centerText()
-    local inpPort = Input.new(dlgMortem.pos + vector.new(270,140), vector.new(270,40), "%d", font2)
+    local inpPort = Input.new(dlgMortem.pos + vector(270,140), vector(270,40), "%d", font2)
     inpPort.text = "12345"
     inpPort:centerText()
 
     function inpIP:ontab() inpIP.active = false inpPort.active = true end
     function inpPort:ontab() inpPort.active = false inpIP.active = true end
 
-    local btnOK = Button.new("OK", dlgMortem.pos + vector.new(260, 210), vector.new(110,40), font2)
+    local btnOK = Button.new("OK", dlgMortem.pos + vector(260, 210), vector(110,40), font2)
     function btnOK.onClick() 
         dlgMortem:close()
         Gamestate.switch(state_mortem, inpIP.text, tonumber(inpPort.text))
     end
 
-    local btnClose = Button.new("Cancel", dlgMortem.pos + vector.new(380, 210), vector.new(110,40), font2)
+    local btnClose = Button.new("Cancel", dlgMortem.pos + vector(380, 210), vector(110,40), font2)
     function btnClose.onClick() 
         dlgMortem:close()
     end
@@ -91,7 +91,7 @@ local function makeDialogMortem()
         btnClose:update(dt)
     end
 
-    btnMortem = Button.new("Mortem", vector.new(400,450), vector.new(400,40), font2)
+    btnMortem = Button.new("Mortem", vector(400,450), vector(400,40), font2)
     btnMortem.onClick = function() dlgMortem:open() end
 end
 
@@ -107,9 +107,9 @@ function st:enter()
     if not dlgDeus then makeDialogDeus() end
 	if not dlgMortem then makeDialogMortem() end
 	if not btnAlone then
-		btnAlone = Button.new("Yes, I Am Alone", vector.new(400,350), vector.new(400,40), font2)
+		btnAlone = Button.new("Yes, I Am Alone", vector(400,350), vector(400,40), font2)
 		btnAlone.onClick = function()
-			local grid,start= Maze.new(20,15)
+			local grid,start = Maze.new(20,15)
 			Gamestate.switch(state_play, grid, start, 20)
 		end
 	end
