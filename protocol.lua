@@ -52,9 +52,13 @@ function Mortem.handshake()
 	assert(pipe, "Give me a pipe, please!")
 
 	local text
-	pipe:send("Pater Noster\n")
-	text = pipe:gettext()
-	return text == "qui es in caelis"
+	while true do
+		pipe:send("Pater Noster\n")
+		text = pipe:gettext()
+		if text == "qui es in caelis" then
+			return true
+		end
+	end
 end
 
 function Deus.sendworld(world, start)
@@ -143,7 +147,7 @@ function Mortem.getworld()
 	if params[1] ~= "And thus I made the world" then return false end
 	pipe:send(string.format("Amen:%s:%s\n", params[2], params[3]))
 
-	local w, h = tonumber(params[2]), tonumber(params[3])
+	local h, w = tonumber(params[2]), tonumber(params[3])
 	local world, row, gotten, n = {}, {}, 0
 
 	repeat
@@ -175,7 +179,7 @@ function Mortem.getworld()
 
 	-- world received successfully. get starting position
 	params = pipe:gettext():split(":")
-	local start = vector.new(tonumber(params[2]), tonumber(params[3]))
+	local start = vector(tonumber(params[2]), tonumber(params[3]))
 	pipe:send(string.format("Amen:%s:%s\n", start.x, start.y))
 
 	text = pipe:gettext()
@@ -199,7 +203,7 @@ function Deus.sendClock(t)
 	pipe:send(string.format("tempus:%s\n",t))
 end
 
-function Deus.addDecal(x, y, decal)
+function Deus.addSign(x, y, decal)
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
 	pipe:send(string.format("signum:%s:%s:%s\n", x,y, decal))

@@ -117,7 +117,7 @@ Handshake:
     D: "qui es in caelis" --> Deus bindet auf M
 
 Welt senden:
-    D: "And thus I made the world:<width>:<height>"
+    D: "And thus I made the world:<height>:<width>"
     M: "Amen:<width>:<height>"
     D: "row:1:<1,1>:<1,2>:...:<1,width>:end"
     M: "Amen:<checksum>"
