@@ -1,13 +1,13 @@
-require "camera"
+require "util/camera"
 require "decals"
 require "player"
 require "level"
 require "gamestate"
-require "state_won"
+require "state/won"
 
 local level, camera, img
-state_play = Gamestate.new()
-local st = state_play
+Gamestate.play = Gamestate.new()
+local st = Gamestate.play
 st.paused = false
 function st:enter(pre, grid, pos, life)
 	assert(grid, "Wha?")
@@ -68,7 +68,7 @@ function st:update(dt)
 
 	player.update(dt, level)
 	if level.grid[player.pos.y][player.pos.x] == 2 then
-		Gamestate.switch(state_won, player, camera)
+		Gamestate.switch(Gamestate.won, player, camera)
 	end
 end
 
@@ -78,6 +78,6 @@ function st:keyreleased(key)
 	elseif key == 'm' then
 		self.show_map = not self.show_map
 	elseif key == 'escape' then
-		Gamestate.switch(state_title)
+		Gamestate.switch(Gamestate.title)
 	end
 end

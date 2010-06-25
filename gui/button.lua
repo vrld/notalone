@@ -1,11 +1,11 @@
-require "vector"
-require "color"
+require "util/vector"
+require "util/color"
 
 Button = {}
 Button.__index = Button
-Button.bgcolor       = Color.new(150,150,150)
-Button.bordercolor   = Color.new(50,50,50)
-Button.textcolor     = Color.new(50,50,50)
+Button.bgcolor       = Color.rgb(150,150,150)
+Button.bordercolor   = Color.rgb(50,50,50)
+Button.textcolor     = Color.rgb(50,50,50)
 Button.bgHovered     = Button.bgcolor * 1.5
 Button.borderHovered = Button.bordercolor * 1.5
 Button.textHovered   = Button.bordercolor * 1.5

@@ -1,4 +1,4 @@
-require "vector"
+require "util/vector"
 Maze = {}
 
 function Maze.initGrid(w,h)

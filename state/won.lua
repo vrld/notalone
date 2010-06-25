@@ -1,4 +1,4 @@
-require "camera"
+require "util/camera"
 require "level"
 require "gamestate"
 
@@ -8,8 +8,8 @@ local str
 local size = 5
 local life = 20
 
-state_won = Gamestate.new()
-local st = state_won
+Gamestate.won = Gamestate.new()
+local st = Gamestate.won
 function st:enter(pre, player, cam)
 	time = 0
 	level = pre.level
@@ -33,7 +33,7 @@ local function next_level()
 	size = size + 2
 	life = life + 5
 	local grid,start= Maze.new(size*4,size*3)
-	Gamestate.switch(state_play, grid, start, life)
+	Gamestate.switch(Gamestate.play, grid, start, life)
 end
 
 function st:draw()
@@ -67,7 +67,7 @@ end
 
 function st:keyreleased(key)
 	if key == 'escape' then
-		Gamestate.switch(state_title)
+		Gamestate.switch(Gamestate.title)
 	elseif key == 'return' then
 		next_level()
 	end

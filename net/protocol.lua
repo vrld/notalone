@@ -1,4 +1,4 @@
-require "pipes"
+require "net/pipes"
 
 local function row_checksum(i, ...)
 	if not i then return 0 end

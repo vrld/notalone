@@ -1,4 +1,4 @@
-require "vector"
+require "util/vector"
 
 player = {
 	age         = 0,
@@ -98,7 +98,7 @@ function player.update(dt, level)
 		if player.dir.y ==  1 then phi = math.pi/2 end
 		if player.dir.y == -1 then phi = math.pi* 3/2 end
 
-		Decals.add(stepsprite(), 120, pospre*TILESIZE + vector(16,16), phi, .8, 160)
+--		Decals.add(stepsprite(), 120, pospre*TILESIZE + vector(16,16), phi, .8, 160)
 		player.keydelay = .15
 	else
 		player.keydelay = player.keydelay - dt

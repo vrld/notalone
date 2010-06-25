@@ -1,12 +1,12 @@
-require "button"
-require "color"
+require "gui/button"
+require "util/color"
 
 Dialog = {}
 Dialog.__index = Dialog
 
-Dialog.bgcolor     = Color.new(150,150,150, 230)
-Dialog.bordercolor = Color.new(50,50,50)
-Dialog.textcolor   = Color.new(50,50,50)
+Dialog.bgcolor     = Color.rgb(150,150,150, 230)
+Dialog.bordercolor = Color.rgb(50,50,50)
+Dialog.textcolor   = Color.rgb(50,50,50)
 
 function Dialog.new(size)
 	local dialog = {}

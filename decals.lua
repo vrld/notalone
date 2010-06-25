@@ -1,4 +1,4 @@
-require "vector"
+require "util/vector"
 
 Decals = {items = {}}
 function Decals.add(img, life, pos, rot, scale, alpha)

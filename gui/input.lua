@@ -1,11 +1,11 @@
-require "vector"
-require "color"
+require "util/vector"
+require "util/color"
 
 Input = {}
 Input.__index      = Input
-Input.bgcolor      = Color.new(150,150,150)
-Input.bordercolor  = Color.new(50,50,50)
-Input.textcolor    = Color.new(50,50,50)
+Input.bgcolor      = Color.rgb(150,150,150)
+Input.bordercolor  = Color.rgb(50,50,50)
+Input.textcolor    = Color.rgb(50,50,50)
 Input.bgActive     = Input.bgcolor * 1.5
 Input.borderActive = Input.bordercolor * 1.5
 Input.textActive   = Input.bordercolor * 1.5

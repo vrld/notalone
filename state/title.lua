@@ -1,14 +1,14 @@
 require "gamestate"
-require "state_deus"
-require "state_mortem"
-require "state_play"
+require "state/deus"
+require "state/mortem"
+require "state/play"
 require "maze"
-require "button"
-require "input"
-require "dialog"
+require "gui/button"
+require "gui/input"
+require "gui/dialog"
 
-state_title = Gamestate.new()
-local st = state_title
+Gamestate.title = Gamestate.new()
+local st = Gamestate.title
 
 local font1,font2
 local dlgDeus, btnDeus, dlgMortem, btnMortem
@@ -22,7 +22,7 @@ local function makeDialogDeus()
     local btnOK = Button.new("OK", dlgDeus.pos + vector(260, 150), vector(110,40), font2)
     function btnOK.onClick()
         dlgDeus:close()
-        Gamestate.switch(state_deus, tonumber(inpPort.text), Maze.new(80,60))
+        Gamestate.switch(Gamestate.deus, tonumber(inpPort.text), Maze.new(80,60))
     end
 
     local btnClose = Button.new("Cancel", dlgDeus.pos + vector(380, 150), vector(110,40), font2)
@@ -65,7 +65,7 @@ local function makeDialogMortem()
     local btnOK = Button.new("OK", dlgMortem.pos + vector(260, 210), vector(110,40), font2)
     function btnOK.onClick() 
         dlgMortem:close()
-        Gamestate.switch(state_mortem, inpIP.text, tonumber(inpPort.text))
+        Gamestate.switch(Gamestate.mortem, inpIP.text, tonumber(inpPort.text))
     end
 
     local btnClose = Button.new("Cancel", dlgMortem.pos + vector(380, 210), vector(110,40), font2)
@@ -110,7 +110,7 @@ function st:enter()
 		btnAlone = Button.new("Yes, I Am Alone", vector(400,350), vector(400,40), font2)
 		btnAlone.onClick = function()
 			local grid,start = Maze.new(20,15)
-			Gamestate.switch(state_play, grid, start, 20)
+			Gamestate.switch(Gamestate.play, grid, start, 20)
 		end
 	end
 

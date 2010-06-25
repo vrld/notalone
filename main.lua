@@ -1,6 +1,7 @@
-require "gamestate.lua"
-require "state_title.lua"
-require "level.lua"
+require "gamestate"
+require "state/title"
+require "level"
+--require "profiler"
 
 TILESIZE = 32
 
@@ -15,6 +16,7 @@ function spatialrange(a1,a2,b1,b2)
 end
 
 function love.load()
+--    profiler.start()
 	Level.init()
-	Gamestate.switch(state_title)
+	Gamestate.switch(Gamestate.title)
 end

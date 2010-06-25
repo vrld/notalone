@@ -15,6 +15,7 @@ function Level.init()
 		Level.tiles.wall[i] = love.image.newImageData(string.format('images/wall%02d.png', i))
 	end
 	Level.fog = love.graphics.newImage('images/fog2.png')
+    Level.fog:setFilter('nearest', 'nearest')
 end
 
 function Level.new(grid)
@@ -169,7 +170,7 @@ function Level:drawFog(bbx,bby,bbw,bbh)
 	local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 1 or math.huge, #self.fog)
 
 	love.graphics.setColor(255,255,255)
-	local shift = -vector(TILESIZE, TILESIZE) / 2
+	local shift = vector(TILESIZE, TILESIZE) / 2
 	local pos
 	--for y,x in spatialrange(1,#self.fog, 1,#self.fog[1]) do
 	for y,x in spatialrange(y1,y2, x1,x2) do

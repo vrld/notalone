@@ -1,17 +1,21 @@
 require "gamestate"
 require "maze"
-require "pipes"
-require "protocol"
-require "camera"
+require "net/pipes"
+require "net/protocol"
+require "util/camera"
+require "gui/dialog"
 
-state_deus = Gamestate.new()
-local st = state_deus
+Gamestate.deus = Gamestate.new()
+local st = Gamestate.deus
 
 local substate, world, playerpos, level, pipe
 
 local wait_for_client = {alpha = 155, t = 0}
 local send_world = {}
 local play = {cam = Camera.new(vector(0,0),1)}
+--
+-- handshake state
+--
 function wait_for_client:draw()
 	love.graphics.setColor(255,255,255,self.alpha)
 	love.graphics.print("Waiting for mortem",100,100)
@@ -25,7 +29,9 @@ function wait_for_client:update(dt)
 		substate = send_world
 	end
 end
-
+--
+-- world sending state
+--
 function send_world:draw()
 	love.graphics.setColor(255,255,255)
 	love.graphics.print(string.format("Sending world..."),100,100)
@@ -42,7 +48,9 @@ function send_world:update(dt)
 		substate = play
 	end
 end
-
+--
+-- play state
+--
 local time, time_since_last_sync = 0,0
 function play:update(dt)
 	time = time + dt
@@ -66,6 +74,9 @@ function play:draw()
 	camera:postdraw()
 end
 
+--
+-- Main gamestate. Forwards to substates
+--
 function st:enter(pre, port, maze, startpos)
 	Deus.pipe = NetPipe.new(port)
 	love.graphics.setBackgroundColor(0,0,0)
@@ -83,12 +94,18 @@ end
 function st:update(dt)
 	local all_ok, error = pcall(function() substate:update(dt) end)
 	if not all_ok then
-		MessageBox("Error occured", error, function() Gamestate.switch(state_title) end)
+		MessageBox("Error occured", error, function() Gamestate.switch(Gamestate.title) end)
 	end
 end
 
 function st:mousereleased(x,y,btn)
 	if substate.mousereleased then
 		substate:mousereleased(x,y,btn)
+	end
+end
+
+function st:keypressed(key,unicode)
+	if substate.keypressed then
+		substate:keypressed(key,unicode)
 	end
 end

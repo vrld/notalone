@@ -1,10 +1,10 @@
 require "gamestate"
-require "pipes"
-require "protocol"
-require "dialog"
+require "net/pipes"
+require "net/protocol"
+require "gui/dialog"
 
-state_mortem = Gamestate.new()
-local st = state_mortem
+Gamestate.mortem = Gamestate.new()
+local st = Gamestate.mortem
 
 local substate, world, pipe
 
@@ -54,7 +54,7 @@ end
 function st:update(dt)
 	local all_ok, error = pcall(function() substate:update(dt) end)
 	if not all_ok then
-		MessageBox("Error occured", error, function() Gamestate.switch(state_title) end)
+		MessageBox("Error occured", error, function() Gamestate.switch(Gamestate.title) end)
 	end
 end
 
