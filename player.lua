@@ -32,12 +32,12 @@ function player.reset()
 end
 
 function player.pixelpos()
-	return player.pos * TILESIZE + vector(16,16)
+	return player.pos * TILESIZE - 3.5 * vector(TILESIZE,TILESIZE)
 end
 
 function player.draw()
 	love.graphics.setColor(0,180,60)
-	love.graphics.rectangle('fill', player.pos.x*TILESIZE, player.pos.y*TILESIZE, TILESIZE, TILESIZE)
+	love.graphics.rectangle('fill', (player.pos.x-1)*TILESIZE, (player.pos.y-1)*TILESIZE, TILESIZE, TILESIZE)
 end
 
 local n = 1

@@ -149,7 +149,7 @@ function Level:draw()
 	end
 
 	love.graphics.setColor(255,255,255)
-	love.graphics.draw(self.img,TILESIZE,TILESIZE)
+	love.graphics.draw(self.img,0,0)
 end
 
 function Level:drawGraves()
@@ -164,13 +164,13 @@ end
 function Level:drawFog(bbx,bby,bbw,bbh)
 	-- compute fog range to draw
 	local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
-	local x1 = max(bbx and floor(bbx / TILESIZE) - 1 or 0, 1)
-	local y1 = max(bby and floor(bby / TILESIZE) - 1 or 0, 1)
-	local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 1 or math.huge, #self.fog[1])
-	local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 1 or math.huge, #self.fog)
+	local x1 = max(bbx and floor(bbx / TILESIZE) or 0, 1)
+	local y1 = max(bby and floor(bby / TILESIZE) or 0, 1)
+	local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 2 or math.huge, #self.fog[1])
+	local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 2 or math.huge, #self.fog)
 
 	love.graphics.setColor(255,255,255)
-	local shift = vector(TILESIZE, TILESIZE) / 2
+	local shift = -vector(TILESIZE, TILESIZE) / 2
 	local pos
 	--for y,x in spatialrange(1,#self.fog, 1,#self.fog[1]) do
 	for y,x in spatialrange(y1,y2, x1,x2) do
