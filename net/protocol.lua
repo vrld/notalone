@@ -55,7 +55,7 @@ function Mortem.handshake()
 	while true do
 		pipe:send("Pater Noster\n")
 		text = pipe:gettext()
-		if text == "qui es in caelis" then
+		if text == "qui es in caelis\n" then
 			return true
 		end
 	end

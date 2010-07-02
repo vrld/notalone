@@ -123,17 +123,25 @@ function Maze.new(w,h, seed)
 	math.randomseed(seed)
 
 	local grid, exit, enter
+	local iterations = 0
 	repeat
 		grid = Maze.initGrid(w,h)
 		exit = Maze.randomexit(grid,w,h)
 
 		local c = vector(w/2,h/2)
 		local r = vector(w/5,h/5)
+		local exitpostries = 0
 		repeat
 			enter = vector(math.random(c.x-r.x, c.x+r.x), math.random(c.y-r.y, c.y+r.y))
-		until (enter-exit):len() > 10
+			exitpostries = exitpostries + 1
+		until (enter-exit):len() > 10 or exitpostries > 10
 		grid[enter.y][enter.x] = 1
 		grid[exit.y][exit.x] = 2
+
+		iterations = iterations + 1
+		if iterations > 10 then
+			error("Cannot generate maze. I tried. Sorry.")
+		end
 
 	until Maze.carve(grid,w,h, enter, exit)
 

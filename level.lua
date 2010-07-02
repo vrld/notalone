@@ -1,35 +1,32 @@
-Level = {tiles = {wall = {}, ground = {}}}
+require "util/tileset"
+
+Level = {tiles = {}}
 Level.__index = Level
 
 function Level.init()
-	Level.tiles.ground[1] = love.image.newImageData('images/ground0.png')
-	Level.tiles.ground[2] = Level.tiles.ground[1]
-	Level.tiles.ground[3] = Level.tiles.ground[1]
-	Level.tiles.ground[4] = Level.tiles.ground[1]
-	Level.tiles.ground[5] = Level.tiles.ground[1]
-	Level.tiles.ground[6] = love.image.newImageData('images/ground1.png')
-	Level.tiles.ground[7] = love.image.newImageData('images/ground2.png')
-	Level.tiles.grave     = love.image.newImageData('images/grave.png')
-	Level.tiles.exit      = love.image.newImageData('images/exit.png')
-	for i=0,15 do
-		Level.tiles.wall[i] = love.image.newImageData(string.format('images/wall%02d.png', i))
-	end
-	Level.fog = love.graphics.newImage('images/fog2.png')
-    Level.fog:setFilter('nearest', 'nearest')
+	local walls = love.graphics.newImage('images/walls.png')
+	walls:setFilter('nearest', 'nearest')
+	Level.tiles.walls  = Tileset(walls, 32, 32)
+
+	local ground = love.graphics.newImage('images/ground.png')
+	ground:setFilter('nearest', 'nearest')
+	Level.tiles.ground = Tileset(ground, 32, 32)
+
+	Level.fog          = love.graphics.newImage('images/fog2.png')
+	Level.fog:setFilter('nearest', 'nearest')
 end
 
 function Level.new(grid)
-	local lvl = setmetatable({grid = grid, graves={}}, Level)
-	lvl.fog = {}
-	lvl.fog_accum = {}
-	local h,w = #lvl.grid, #lvl.grid[1]
-	for y=1,h do
-		lvl.fog[y] = {}
-		lvl.fog_accum[y] = {}
-		for x=1,w do
-			lvl.fog[y][x] = true
-			lvl.fog_accum[y][x] = true
+	local lvl = setmetatable({grid = grid}, Level)
+	-- seen_accum -> what has been seen over a lifetime
+	lvl.seen, lvl.seen_accum = {}, {}
+	for y,x in spatialrange(1,#lvl.grid, 1,#lvl.grid[1]) do
+		if not lvl.seen[y] then
+			lvl.seen[y] = {}
+			lvl.seen_accum[y] = {}
 		end
+		lvl.seen[y][x] = false
+		lvl.seen_accum[y][x] = false
 	end
 	return lvl
 end
@@ -52,71 +49,13 @@ function Level:_tilenumber(x,y)
 	return num
 end
 
-function Level:render()
-	local tiles = Level.tiles
-
-	local w,h = #self.grid[1], #self.grid
-	self.w, self.h = w,h
-	self.pixels = {w = w*TILESIZE, h = h*TILESIZE}
-	local imgdata = love.image.newImageData(w*TILESIZE,h*TILESIZE)
-
-	-- level image
-	local grid = self.grid
-	for x=1,w do
-		for y=1,h do
-			local source = nil
-			if grid[y][x] == 0 then
-				source = tiles.wall[self:_tilenumber(x,y)]
-			elseif grid[y][x] ==  2 then
-				source = tiles.exit
-			else
-				source = tiles.ground[math.random(1,#tiles.ground)]
-			end
-			imgdata:paste(source, (x-1)*TILESIZE, (y-1)*TILESIZE, 0,0, TILESIZE,TILESIZE)
-		end
+function Level:unsee()
+	for y,x in spatialrange(1,#self.seen, 1,#self.seen[1]) do
+		self.seen[y][x] = false
 	end
-
-	-- postprocess
-	for x,y in spatialrange(1,w-1, 0,h*TILESIZE-1) do
-		local l,k = {imgdata:getPixel(x*TILESIZE-1,y)},{imgdata:getPixel(x*TILESIZE,y)}
-		local r,g,b = (l[1]+k[1])/2, (l[2]+k[2])/2, (l[3]+k[3])/2
-	end
-	for y,x in spatialrange(1,h-1, 0,w*TILESIZE-1) do
-		local l,r = {imgdata:getPixel(x,y*TILESIZE-1)},{imgdata:getPixel(x,y*TILESIZE)}
-		local r,g,b = (l[1]+r[1])/2, (l[2]+r[2])/2, (l[3]+r[3])/2
-		imgdata:setPixel(x,y*TILESIZE, r,g,b,255)
-	end
-	-- darken edges - TODO: refactor
-	local F = 20
-	for x = 0,w*TILESIZE-1 do
-		for y = 0,F do
-			local r,g,b = imgdata:getPixel(x,y)
-			local f = y/F
-			imgdata:setPixel(x,y,r * f, g * f, b * f, f*255)
-		end
-		for y = h*TILESIZE-F-1,h*TILESIZE-1 do
-			local r,g,b = imgdata:getPixel(x,y)
-			local f = (h*TILESIZE-1 - y)/F
-			imgdata:setPixel(x,y,r * f, g * f, b * f, f*255)
-		end
-	end
-	for y = 0,h*TILESIZE-1 do
-		for x = 0,F do
-			local r,g,b = imgdata:getPixel(x,y)
-			local f = x/F
-			imgdata:setPixel(x,y,r * f, g * f, b * f, f*255)
-		end
-		for x = w*TILESIZE-F-1,w*TILESIZE-1 do
-			local r,g,b = imgdata:getPixel(x,y)
-			local f = (w*TILESIZE-1 - x)/F
-			imgdata:setPixel(x,y,r * f, g * f, b * f, f*255)
-		end
-	end
-
-	return imgdata
 end
 
-function Level:updateFog(pos, dir, max, steps)
+function Level:see(pos, dir, max, steps)
 	local max = max or 3
 	local steps = steps or 0
 	local grid = self.grid
@@ -126,63 +65,89 @@ function Level:updateFog(pos, dir, max, steps)
 	end
 
 	for i,k in spatialrange(-1,1, -1,1) do
-		if self.fog[pos.y+i] then
-			self.fog[pos.y+i][pos.x+k] = false
-			self.fog_accum[pos.y+i][pos.x+k] = false
+		if self.seen[pos.y+i] and not self.seen[pos.y+i][pos.x+k] then
+			self.seen[pos.y+i][pos.x+k] = true
+			self.seen_accum[pos.y+i][pos.x+k] = true
 		end
 	end
 
-	self:updateFog(pos+dir, dir, max, steps + 1)
+	self:see(pos+dir, dir, max, steps + 1)
 end
 
-function Level:die(pos)
-	self.graves[pos:clone()] = love.graphics.newImage(Level.tiles.grave)
-	for y,x in spatialrange(1,self.h, 1,self.w) do
-		self.fog[y][x] = true
-	end
-end
+function Level:draw(camera)
+	local walls, ground = Level.tiles.walls, Level.tiles.ground
+	local pos, source
+	local grid = self.grid
 
-function Level:draw()
-	if not self.img then
-		self.img = love.graphics.newImage(self:render())
-		self.img:setFilter('nearest', 'nearest')
-	end
+	-- get bounding box of what to draw
+	local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
+	local bbx, bby, bbw, bbh = camera:rect()
+	local x1 = max(bbx and floor(bbx / TILESIZE) or 1, 1)
+	local y1 = max(bby and floor(bby / TILESIZE) or 1, 1)
+	local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 1 or math.huge, #self.seen[1])
+	local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 1 or math.huge, #self.seen)
 
 	love.graphics.setColor(255,255,255)
-	love.graphics.draw(self.img,0,0)
-end
-
-function Level:drawGraves()
-	-- draw graves
-	love.graphics.setColor(255,255,255)
-	for pos,img in pairs(self.graves) do
-		love.graphics.draw(img, (pos*32):unpack())
+	math.randomseed(#grid * #grid[1])
+	for y,x in spatialrange(y1,y2, x1,x2) do
+		if self.seen[y][x] then
+			pos = vector(x-1,y-1) * TILESIZE
+			if grid[y][x] == 0 then
+				walls:draw(self:_tilenumber(x,y)+1, pos:unpack())
+			else
+				ground:draw(math.random(1, ground.count), pos:unpack())
+			end
+		end
 	end
 end
 
 -- draw fog
-function Level:drawFog(bbx,bby,bbw,bbh)
+-- if this is the grid
+--                    +---+-:-+---+---+
+--   +---+-:-+---+    |1,1|   |w,1|v,1|
+--   |1,1|   |w,1|    +---+-:-+---+---+
+--   +---+-:-+---+    :   :   :   :   :
+--   :   :   :   :    +---+-:-+---+---+
+--   +---+-:-+---+    |1,h|   |w,h|v,h|
+--   |1,h|   |w,h|    +---+-:-+---+---+
+--   +---+-:-+---+    |1,n|   |w,n|v,n|
+--                    +---+-:-+---+---+
+--                  then this is the fog.
+-- it is one cell wider and higher than the maze and shifted by
+-- tilesize/2 to the top left
+-- fog needs only to be drawn on edges of seen tiles.
+function Level:drawFog(camera)
+	local seen = self.seen
+
 	-- compute fog range to draw
 	local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
+	local bbx, bby, bbw, bbh = camera:rect()
 	local x1 = max(bbx and floor(bbx / TILESIZE) or 0, 1)
 	local y1 = max(bby and floor(bby / TILESIZE) or 0, 1)
-	local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 2 or math.huge, #self.fog[1])
-	local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 2 or math.huge, #self.fog)
+	local x2 = min(bbw and x1 + ceil(bbw / TILESIZE) + 2 or math.huge, #self.seen[1])
+	local y2 = min(bbh and y1 + ceil(bbh / TILESIZE) + 2 or math.huge, #self.seen)
 
 	love.graphics.setColor(255,255,255)
-	local shift = -vector(TILESIZE, TILESIZE) / 2
-	local pos
-	--for y,x in spatialrange(1,#self.fog, 1,#self.fog[1]) do
+	local function needfog(x,y)
+		return not seen[y][x] and (false
+			or ((y > 1 and seen[y-1][x]) or y <= 1)
+			or ((x > 1 and seen[y][x-1]) or x <= 1)
+			or ((y < #seen and seen[y+1][x]) or y >= #seen)
+			or ((x < #seen[1] and seen[y][x+1]) or x >= #seen[1]))
+	end
+
 	for y,x in spatialrange(y1,y2, x1,x2) do
-		if self.fog[y][x] then
-			math.randomseed(self.pixels.w * self.pixels.h + x * y)
-			pos = vector(x,y) * TILESIZE + shift
+		if needfog(x,y) then
+			math.randomseed(#seen * #seen+1 + x * y)
+			local pos = vector(x-.5,y-.5) * TILESIZE
 			for i = 1,3 do
 				local s = math.random() * .4 + .8
 				love.graphics.draw(Level.fog,
-					pos.x + math.random(-16,16), pos.y + math.random(-16,16), 
-					math.random()*math.pi,
-					2,2, 16,16)
+					pos.x + math.random(-TILESIZE/2,TILESIZE/2), -- position
+					pos.y + math.random(-TILESIZE/2,TILESIZE/2), -- position
+					math.random()*math.pi, -- angle
+					2,2,                   -- scale
+					TILESIZE/2,TILESIZE/2) -- origin
 			end
 		end
 	end

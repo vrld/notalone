@@ -50,17 +50,17 @@ function player.update(dt, level)
 	player.age = player.age + dt
 
 	-- spawn offspring, sort of
-	local frac = player.age / player.lifespan
-	if frac > .6 and frac < .7 then
-		player.startpos = player.pos
-	end
+--	local frac = player.age / player.lifespan
+--	if frac > .6 and frac < .7 then
+--		player.startpos = player.pos
+--	end
 
 	-- die
 	if player.age > player.lifespan then
 		player.lifespan = player.lifespan + 5
-		level:die(player.pos)
+		level:unsee()
 		player.reset()
-		level:updateFog(player.pos,vector(0,0),1)
+		level:see(player.pos,vector(0,0),1)
 	end
 
 	if player.keydelay <= 0 then
@@ -82,7 +82,7 @@ function player.update(dt, level)
 			return
 		end
 
-		level:updateFog(player.pos, player.dir)
+		level:see(player.pos, player.dir)
 		-- update zoom range -- TODO: to fog range!
 		player.seen.min.x = math.min(player.seen.min.x, player.pos.x-2)
 		player.seen.min.y = math.min(player.seen.min.y, player.pos.y-2)
@@ -93,11 +93,11 @@ function player.update(dt, level)
 		player.zoom = math.min(delta, 8)
 
 		-- place footsteps
-		local phi = 0
-		if player.dir.x == -1 then phi = math.pi end
-		if player.dir.y ==  1 then phi = math.pi/2 end
-		if player.dir.y == -1 then phi = math.pi* 3/2 end
-
+--		local phi = 0
+--		if player.dir.x == -1 then phi = math.pi end
+--		if player.dir.y ==  1 then phi = math.pi/2 end
+--		if player.dir.y == -1 then phi = math.pi* 3/2 end
+--
 --		Decals.add(stepsprite(), 120, pospre*TILESIZE + vector(16,16), phi, .8, 160)
 		player.keydelay = .15
 	else

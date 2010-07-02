@@ -1,11 +1,10 @@
 require "util/camera"
-require "decals"
 require "player"
 require "level"
 require "gamestate"
 require "state/won"
 
-local level, camera, img
+local level, camera
 Gamestate.play = Gamestate.new()
 local st = Gamestate.play
 st.paused = false
@@ -14,23 +13,19 @@ function st:enter(pre, grid, pos, life)
 	assert(pos, "Whoop Whoop Whoop")
 	assert(life, "Good news everyone")
 	love.graphics.setBackgroundColor(0,0,0)
-	Decals.clear()
 
 	level = Level.new(grid)
 	player.init(level, pos, life)
 	camera = Camera.new(player.pixelpos(),1)
-	level:updateFog(pos, vector(0,0), 1)
-	img = love.graphics.newImage(level:render())
+	level:see(pos, vector(0,0), 1)
 	self.level = level
     love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
 end
 
 function st:draw()
 	camera:predraw()
-	level:draw()
-	Decals.draw()
-	level:drawGraves()
-	level:drawFog(camera:rect())
+	level:draw(camera)
+	level:drawFog(camera)
 	player.draw()
 	camera:postdraw()
 
@@ -40,13 +35,6 @@ function st:draw()
 	love.graphics.rectangle('fill', 10, 10, barwith, 7)
 	love.graphics.setColor(255,255,255)
 	love.graphics.rectangle('fill', 10, 10, frac*barwith, 7)
-
-	if self.show_map then
-		love.graphics.setColor(255,255,255,200)
-		local sx,sy = 200 / level.pixels.w, 200 / level.pixels.h
-		local sc = math.min(sx,sy)
-		love.graphics.draw(img, 590,390,0, sc)
-	end
 
 	if self.paused then
 		love.graphics.setColor(0,0,0,150)
@@ -60,7 +48,6 @@ end
 function st:update(dt)
 	if self.paused then return end
 
-	Decals.update(dt)
 	local min,max = player.seen.min, player.seen.max
 	local center = ((max - min) / 2 + min) * TILESIZE + vector(TILESIZE/2, TILESIZE/2)
 	camera.pos = camera.pos - (camera.pos - (.75 * center + .25 * player.pixelpos())) * dt * 10

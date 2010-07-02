@@ -50,6 +50,7 @@ function NetPipe.new(port, addr)
 end
 
 function NetPipe:send(str, addr, port)
+	print(str)
 	if addr and port then
 		return assert(self.udp:sendto(str, addr, port))
 	end
@@ -64,7 +65,7 @@ function NetPipe:gettext()
 	local text
 	while true do
 		text = self:receive()
-		if text then return text end
+		if text then print(text) return text end
 		coroutine.yield()
 	end
 end

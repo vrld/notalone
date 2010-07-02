@@ -31,7 +31,7 @@
         Zunaechst sieht der Spieler nur einen sehr kleinen Ausschnitt des
         Labyrinths, es wird sehr nah an ihn herangezoomt. Je mehr das
         Labyrinth erforscht wird, desto groesser wird der Ausschnitt, es wird
-        heraus gezoomt. Es wird ein "Logbuch" gefuehrt -- ein roter "Faden" 
+        heraus gezoomt. Es wird ein "Logbuch" gefuehrt -- ein roter "Faden"
         zeichnet bereits gegangene Wege. Der Faden verblasst langsam.
         Nach einer gewissen Zeit stirbt die Spielfigur. Am Ausgangspunkt
         erscheint eine neue Spielfigur.

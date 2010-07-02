@@ -7,6 +7,8 @@ require "gui/button"
 require "gui/input"
 require "gui/dialog"
 
+require "AnAL"
+
 Gamestate.title = Gamestate.new()
 local st = Gamestate.title
 

@@ -38,6 +38,39 @@ function get_world:update(dt)
 	end
 end
 
+-- play state
+local keydelay = 0
+function play:update(dt)
+	if keydelay <= 0 then
+		keydelay = .15
+
+		if love.keyboard.isDown('up') then
+			player:moveUp()
+		elseif love.keyboard.isDown('down') then
+			player:moveDown()
+		end
+		if love.keyboard.isDown('left') then
+			player:moveLeft()
+		elseif love.keyboard.isDown('right') then
+			player:moveRight()
+		end
+
+	else
+		keydelay = keydelay - dt
+	end
+end
+
+function play:draw()
+	camera:predraw()
+	level:draw()
+	fog:draw()
+	items:draw()
+	player:draw()
+	camera:postdraw()
+	time:draw()
+end
+
+-- parent state
 function st:enter(pre, ip, port)
 	Mortem.pipe = NetPipe.new(port, ip)
 	love.graphics.setBackgroundColor(0,0,0)

@@ -13,6 +13,7 @@ local substate, world, playerpos, level, pipe
 local wait_for_client = {alpha = 155, t = 0}
 local send_world = {}
 local play = {cam = Camera.new(vector(0,0),1)}
+local selected_pos = vector(0,0)
 --
 -- handshake state
 --
@@ -46,12 +47,30 @@ function send_world:update(dt)
 			math.min(love.graphics.getWidth()  / ((#world[1]+1)*TILESIZE),
 					 love.graphics.getHeight() / ((#world+1)*TILESIZE)))
 		substate = play
+		selected_pos = vector(math.floor(#world[1]/2), math.floor(#world/2))
 	end
 end
 --
 -- play state
 --
 local time, time_since_last_sync = 0,0
+local keydelay = 0
+local min, max = math.min, math.max
+local actions = {
+	modifier_none = {
+		up    = function() selected_pos.y = max(selected_pos.y - 1, 0) end,
+		down  = function() selected_pos.y = min(selected_pos.y + 1, #world) end,
+		left  = function() selected_pos.x = max(selected_pos.x - 1, 0) end,
+		right = function() selected_pos.x = min(selected_pos.x + 1, #world[1]) end,
+	},
+	modifier_zoom = {
+		up    = function() --[[ increase zoom level --]] end,
+		down  = function() --[[ decrease zoom level --]] end,
+		left  = function() --[[ select other item --]] end,
+		right = function() --[[ select other item --]] end,
+	},
+}
+
 function play:update(dt)
 	time = time + dt
 	time_since_last_sync = time_since_last_sync + dt
@@ -64,14 +83,40 @@ function play:update(dt)
 	if message and message[1] == "moveo" then
 		playerpos = vector(tonumber(message[2]), tonumber(message[3]))
 	end
+
+	if keydelay <= 0 then
+		keydelay = .15
+
+		-- TODO: select keymap
+		local keyaction = actions.modifier_none
+		for key, fun in pairs(keyaction) do
+			if love.keyboard.isDown(key) then
+				fun()
+			end
+		end
+
+	else
+		keydelay = keydelay - dt
+	end
+
+	-- update zoom level
+	-- update camera pos
 end
 
 function play:draw()
 	camera:predraw()
-	level:draw()
+	-- level:draw()
+	-- player:draw()
+	-- selection:draw()
+	level:drawStatic()
 	love.graphics.setColor(255,255,255)
 	love.graphics.rectangle('fill', playerpos.x*TILESIZE, playerpos.y*TILESIZE, 32,32)
+	love.graphics.setColor(255,160,0,100)
+	love.graphics.rectangle('fill', selected_pos.x*TILESIZE, selected_pos.y*TILESIZE, 32,32)
 	camera:postdraw()
+	-- items:draw()
+	-- selectedItem:draw()
+	-- time:draw()
 end
 
 --
