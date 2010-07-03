@@ -17,7 +17,7 @@ function st:enter(pre, grid, pos, life)
 	level = Level.new(grid)
 	player.init(level, pos, life)
 	camera = Camera.new(player.pixelpos(),1)
-	level:see(pos, vector(0,0), 1)
+	level:see(pos, 3)
 	self.level = level
     love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
 end
@@ -49,7 +49,7 @@ function st:update(dt)
 	if self.paused then return end
 
 	local min,max = player.seen.min, player.seen.max
-	local center = ((max - min) / 2 + min) * TILESIZE + vector(TILESIZE/2, TILESIZE/2)
+	local center = ((max - min) / 2 + min) * TILESIZE - vector(TILESIZE/2, TILESIZE/2)
 	camera.pos = camera.pos - (camera.pos - (.75 * center + .25 * player.pixelpos())) * dt * 10
 	camera.zoom = camera.zoom - (camera.zoom - player.zoom) * dt * 10
 

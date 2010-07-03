@@ -14,13 +14,12 @@ function st:enter(pre, player, cam)
 	time = 0
 	level = pre.level
 	love.graphics.setBackgroundColor(0,0,0)
-	Decals.clear()
 
-	center = vector(level.pixels.w/2, level.pixels.h/2) + vector(TILESIZE,TILESIZE)
-	sc = math.min(love.graphics.getWidth()/level.pixels.w,
-	              love.graphics.getHeight()/level.pixels.h)
+	center = vector(#level.grid[1]/2, #level.grid/2) * TILESIZE
+	sc = math.min(love.graphics.getWidth()/#level.grid[1]/TILESIZE,
+	              love.graphics.getHeight()/#level.grid/TILESIZE)
 	camera = cam
-	level.fog = level.fog_accum
+	level.seen = level.seen_accum
 
 	if player.lifes > 1 then
 		str = "You were not alone in this world"
@@ -38,9 +37,8 @@ end
 
 function st:draw()
 	camera:predraw()
-	level:draw()
-	level:drawGraves()
-	level:drawFog()
+	level:draw(camera)
+	level:drawFog(camera)
 	camera:postdraw()
 
 	local fade = math.min(time/fadetime, 1)

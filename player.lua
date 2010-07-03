@@ -1,4 +1,5 @@
 require "util/vector"
+require "trail"
 
 player = {
 	age         = 0,
@@ -9,11 +10,11 @@ player = {
 	seen        = {min=vector(0,0),max=vector(0,0)},
 	zoom        = 10,
 	keydelay    = 0,
-	ref_level   = nil,
 	lifes       = 0,
+	ondie       = function(lifes) end,
+	onmove      = function(pos, direction) end
 }
 function player.init(level, start, lifespan)
-	player.ref_level = level.grid
 	assert(start, "start position must be supplied")
 	player.startpos = start:clone()
 	player.lifespan = lifespan or 45
@@ -29,41 +30,34 @@ function player.reset()
 	player.seen.min = player.pos - vector(1,1)
 	player.seen.max = player.pos + vector(1,1)
 	player.zoom = 10
+
+	player.trail = Trail(player.pixelpos())
 end
 
 function player.pixelpos()
-	return player.pos * TILESIZE - 3.5 * vector(TILESIZE,TILESIZE)
+	return player.pos * TILESIZE - .5 * vector(TILESIZE,TILESIZE)
 end
 
 function player.draw()
 	love.graphics.setColor(0,180,60)
 	love.graphics.rectangle('fill', (player.pos.x-1)*TILESIZE, (player.pos.y-1)*TILESIZE, TILESIZE, TILESIZE)
+
+	player.trail:draw()
 end
 
-local n = 1
-function stepsprite()
-	n = n % 2 + 1
-	return string.format("images/footsteps%d.png", n)
-end
-
+local n, keydelay = 1, 0
 function player.update(dt, level)
 	player.age = player.age + dt
-
-	-- spawn offspring, sort of
---	local frac = player.age / player.lifespan
---	if frac > .6 and frac < .7 then
---		player.startpos = player.pos
---	end
 
 	-- die
 	if player.age > player.lifespan then
 		player.lifespan = player.lifespan + 5
 		level:unsee()
 		player.reset()
-		level:see(player.pos,vector(0,0),1)
+		level:see(player.pos,1)
 	end
 
-	if player.keydelay <= 0 then
+	if keydelay <= 0 then
 		local pospre = player.pos:clone()
 		if love.keyboard.isDown('up') then
 			player.dir = vector(0,-1)
@@ -77,12 +71,13 @@ function player.update(dt, level)
 			return
 		end
 		player.pos = player.pos + player.dir
-		if player.ref_level[player.pos.y][player.pos.x] == 0 then
+		if level.grid[player.pos.y][player.pos.x] == 0 then
 			player.pos = pospre
 			return
 		end
+		player.trail:add(player.pixelpos())
 
-		level:see(player.pos, player.dir)
+		level:see(player.pos)
 		-- update zoom range -- TODO: to fog range!
 		player.seen.min.x = math.min(player.seen.min.x, player.pos.x-2)
 		player.seen.min.y = math.min(player.seen.min.y, player.pos.y-2)
@@ -93,14 +88,8 @@ function player.update(dt, level)
 		player.zoom = math.min(delta, 8)
 
 		-- place footsteps
---		local phi = 0
---		if player.dir.x == -1 then phi = math.pi end
---		if player.dir.y ==  1 then phi = math.pi/2 end
---		if player.dir.y == -1 then phi = math.pi* 3/2 end
---
---		Decals.add(stepsprite(), 120, pospre*TILESIZE + vector(16,16), phi, .8, 160)
-		player.keydelay = .15
+		keydelay = .15
 	else
-		player.keydelay = player.keydelay - dt
+		keydelay = keydelay - dt
 	end
 end

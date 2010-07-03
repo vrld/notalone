@@ -34,16 +34,16 @@ end
 function Level:_tilenumber(x,y)
 	local grid = self.grid
 	local num = 0
-	if grid[y-1] and grid[y-1][x] >= 1 then
+	if (grid[y-1] and grid[y-1][x] >= 1) or not grid[y-1] then
 		num = num + 1
 	end
-	if grid[y][x+1] and grid[y][x+1] >= 1 then
+	if (grid[y][x+1] and grid[y][x+1] >= 1) or not grid[y][x+1] then
 		num = num + 2
 	end
-	if grid[y+1] and grid[y+1][x] >= 1 then
+	if (grid[y+1] and grid[y+1][x] >= 1) or not grid[y+1] then
 		num = num + 4
 	end
-	if grid[y][x-1] and grid[y][x-1] >= 1 then
+	if (grid[y][x-1] and grid[y][x-1] >= 1) or not grid[y][x-1] then
 		num = num + 8
 	end
 	return num
@@ -55,11 +55,12 @@ function Level:unsee()
 	end
 end
 
-function Level:see(pos, dir, max, steps)
+function Level:see(pos, max, steps)
 	local max = max or 3
 	local steps = steps or 0
 	local grid = self.grid
 	if steps >= max then return end
+	-- if we hit a wall, then return
 	if grid[pos.y] and (not grid[pos.y][pos.x] or grid[pos.y][pos.x] == 0) then
 		return
 	end
@@ -71,7 +72,10 @@ function Level:see(pos, dir, max, steps)
 		end
 	end
 
-	self:see(pos+dir, dir, max, steps + 1)
+	self:see(pos+vector( 1, 0), max, steps + 1)
+	self:see(pos+vector( 0, 1), max, steps + 1)
+	self:see(pos+vector(-1, 0), max, steps + 1)
+	self:see(pos+vector( 0,-1), max, steps + 1)
 end
 
 function Level:draw(camera)
@@ -102,20 +106,6 @@ function Level:draw(camera)
 end
 
 -- draw fog
--- if this is the grid
---                    +---+-:-+---+---+
---   +---+-:-+---+    |1,1|   |w,1|v,1|
---   |1,1|   |w,1|    +---+-:-+---+---+
---   +---+-:-+---+    :   :   :   :   :
---   :   :   :   :    +---+-:-+---+---+
---   +---+-:-+---+    |1,h|   |w,h|v,h|
---   |1,h|   |w,h|    +---+-:-+---+---+
---   +---+-:-+---+    |1,n|   |w,n|v,n|
---                    +---+-:-+---+---+
---                  then this is the fog.
--- it is one cell wider and higher than the maze and shifted by
--- tilesize/2 to the top left
--- fog needs only to be drawn on edges of seen tiles.
 function Level:drawFog(camera)
 	local seen = self.seen
 
@@ -146,7 +136,7 @@ function Level:drawFog(camera)
 					pos.x + math.random(-TILESIZE/2,TILESIZE/2), -- position
 					pos.y + math.random(-TILESIZE/2,TILESIZE/2), -- position
 					math.random()*math.pi, -- angle
-					2,2,                   -- scale
+					2,2, -- scale
 					TILESIZE/2,TILESIZE/2) -- origin
 			end
 		end
