@@ -31,8 +31,8 @@ end
 local function next_level()
 	size = size + 2
 	life = life + 5
-	local grid,start= Maze.new(size*4,size*3)
-	Gamestate.switch(Gamestate.play, grid, start, life)
+	local grid,start,exit= Maze.new(size*4,size*3)
+	Gamestate.switch(Gamestate.play, grid, start,exit, life)
 end
 
 function st:draw()

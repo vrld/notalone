@@ -2,13 +2,14 @@ require "util/camera"
 require "player"
 require "level"
 require "gamestate"
+require "items"
 require "state/won"
 
 local level, camera
 Gamestate.play = Gamestate.new()
 local st = Gamestate.play
 st.paused = false
-function st:enter(pre, grid, pos, life)
+function st:enter(pre, grid, pos, exit, life)
 	assert(grid, "Wha?")
 	assert(pos, "Whoop Whoop Whoop")
 	assert(life, "Good news everyone")
@@ -38,12 +39,17 @@ function st:enter(pre, grid, pos, life)
 		player.trail:add(player.pixelpos())
 		level:see(newpos)
 	end
+
+	Items.clear()
+	local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .1, 0)
+	Items.add(exitanim, exit)
 end
 
 function st:draw()
 	camera:predraw()
 	level:draw(camera)
 	level:drawFog(camera)
+	Items.draw(level.seen)
 	player.draw()
 	Trails.draw()
 	camera:postdraw()
@@ -78,6 +84,8 @@ function st:update(dt)
 		Trails.clear()
 		Gamestate.switch(Gamestate.won, player, camera)
 	end
+
+	Items.update(dt)
 end
 
 function st:keyreleased(key)

@@ -111,8 +111,8 @@ function st:enter()
 	if not btnAlone then
 		btnAlone = Button.new("Yes, I Am Alone", vector(400,350), vector(400,40), font2)
 		btnAlone.onClick = function()
-			local grid,start = Maze.new(20,15)
-			Gamestate.switch(Gamestate.play, grid, start, 20)
+			local grid,start,exit = Maze.new(20,15)
+			Gamestate.switch(Gamestate.play, grid, start, exit, 20)
 		end
 	end
 

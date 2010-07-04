@@ -49,7 +49,7 @@ function newAnimation(image, fw, fh, delay, frames)
 	a.direction = 1
 	local imgw = image:getWidth()
 	local imgh = image:getHeight()
-	if frames == 0 then
+	if not frames or frames == 0 then
 		frames = imgw / fw * imgh / fh
 	end
 	local rowsize = imgw/fw
