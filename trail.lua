@@ -31,10 +31,12 @@ local function jitter(path, amount)
 	local amount = amount or 3
 	local lastv = vector(0,0)
 	for i, v in ipairs(path) do
-		math.randomseed(v.x * lastv.x + v.y * lastv.y)
-		lastv = v
-		path[i] = vector(v.x + math.random() * amount * 2 - amount,
-						 v.y + math.random() * amount * 2 - amount)
+		if i > 2 then -- skip the first item
+			math.randomseed(v.x * lastv.x + v.y * lastv.y)
+			lastv = v
+			path[i] = vector(v.x + math.random() * amount * 2 - amount,
+							 v.y + math.random() * amount * 2 - amount)
+		end
 	end
 	return path
 end
@@ -66,7 +68,7 @@ end
 
 function trail:add(pos)
 	self.life = self.lifetime
-	if #self < 2 then
+	if #self.path < 2 then
 		self[#self+1] = pos
 		if #self == 2 then
 			self.path = {self[1].x, self[1].y, self[2].x, self[2].y}
@@ -74,11 +76,18 @@ function trail:add(pos)
 		return
 	end
 
+	-- we don't need to calculate the whole subdivision every time:
+	--   use last three positions for subdivision
+	--   the first new point replaces the last old point of the path
 	self[#self+1] = pos
-	while #self > self.size do
-		table.remove(self, 1)
+	local count = #self.path
+	local points = {vector(self.path[count-3], self.path[count-2]),
+	                vector(self.path[count-1], self.path[count]),
+	                pos}
+	local segments = topoly(jitter(subdivide(points, .8, 2)))
+	for i,s in ipairs(segments) do
+		self.path[count + i - 2] = s
 	end
-	self.path = topoly( jitter( subdivide(self, .8, 2) ) )
 end
 
 function trail:draw()
