@@ -41,6 +41,17 @@ end
 -- play state
 local keydelay = 0
 function play:update(dt)
+	local message = getMessage(Deus.pipe)
+	if message then
+		if message[1] == "tempus" then -- time update
+			print("Time:",message[2])
+		elseif message[1] == "rumpas" then -- die
+			player.die()
+		elseif message[1] == "signum" then
+			-- add item
+		end
+	end
+
 	if keydelay <= 0 then
 		keydelay = .15
 
@@ -63,11 +74,11 @@ end
 function play:draw()
 	camera:predraw()
 	level:draw()
-	fog:draw()
-	items:draw()
-	player:draw()
+	level:drawFog()
+--	items:draw()
+	player.draw()
 	camera:postdraw()
-	time:draw()
+--	time:draw()
 end
 
 -- parent state
@@ -78,6 +89,25 @@ function st:enter(pre, ip, port)
 
 	connect.handshake = coroutine.create(Mortem.handshake)
 	get_world.getworld = coroutine.create(Mortem.getworld)
+
+	function player.ondie()
+		level:unsee()
+		player.reset()
+		level:see(player.pos,1)
+		Mortem.move(player.pos:unpack())
+	end
+
+	function player.onmove(pos, direction)
+		local newpos = pos + direction
+		if grid[newpos.y][newpos.x] == 0 then
+			return
+		end
+
+		player.pos = newpos
+		player.trail:add(player.pixelpos())
+		level:see(newpos)
+		Mortem.move(newpos:unpack())
+	end
 end
 
 function st:draw()

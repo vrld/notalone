@@ -74,6 +74,9 @@ local actions = {
 function play:update(dt)
 	time = time + dt
 	time_since_last_sync = time_since_last_sync + dt
+
+	player:update(dt)
+
 	if time_since_last_sync > .5 then
 		Deus.sendClock(time)
 		time_since_last_sync = 0
@@ -81,8 +84,9 @@ function play:update(dt)
 
 	local message = getMessage(Deus.pipe)
 	if message and message[1] == "moveo" then
-		playerpos = vector(tonumber(message[2]), tonumber(message[3]))
+		player.pos = vector(tonumber(message[2]), tonumber(message[3]))
 	end
+
 
 	if keydelay <= 0 then
 		keydelay = .15
@@ -105,10 +109,9 @@ end
 
 function play:draw()
 	camera:predraw()
-	-- level:draw()
-	-- player:draw()
+	level:draw()
+	player.draw()
 	-- selection:draw()
-	level:drawStatic()
 	love.graphics.setColor(255,255,255)
 	love.graphics.rectangle('fill', playerpos.x*TILESIZE, playerpos.y*TILESIZE, 32,32)
 	love.graphics.setColor(255,160,0,100)
@@ -130,6 +133,10 @@ function st:enter(pre, port, maze, startpos)
 
 	wait_for_client.handshake = coroutine.create(Deus.handshake)
 	send_world.sendworld = coroutine.create(Deus.sendworld)
+
+	function player.ondie()
+		Deus.killPlayer()
+	end
 end
 
 function st:draw()
