@@ -16,7 +16,8 @@ function spatialrange(a1,a2,b1,b2)
 end
 
 function love.load()
---    profiler.start()
+	--profiler.start()
 	Level.init()
 	Gamestate.switch(Gamestate.title)
+	love.graphics.setLine(3)
 end
