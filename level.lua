@@ -28,6 +28,8 @@ function Level.new(grid)
 		lvl.seen[y][x] = false
 		lvl.seen_accum[y][x] = false
 	end
+	lvl.seen.min = vector(math.huge, math.huge)
+	lvl.seen.max = vector(0,0)
 	return lvl
 end
 
@@ -53,6 +55,8 @@ function Level:unsee()
 	for y,x in spatialrange(1,#self.seen, 1,#self.seen[1]) do
 		self.seen[y][x] = false
 	end
+	self.seen.min = vector(math.huge, math.huge)
+	self.seen.max = vector(0,0)
 end
 
 function Level:see(pos, max, steps)
@@ -65,12 +69,22 @@ function Level:see(pos, max, steps)
 		return
 	end
 
+	local seen, seen_accum = self.seen, self.seen_accum
+	local _max, _min = math.max, math.min
 	for i,k in spatialrange(-1,1, -1,1) do
-		if self.seen[pos.y+i] and not self.seen[pos.y+i][pos.x+k] then
-			self.seen[pos.y+i][pos.x+k] = true
-			self.seen_accum[pos.y+i][pos.x+k] = true
+		if seen[pos.y+i] and not seen[pos.y+i][pos.x+k] then
+			seen[pos.y+i][pos.x+k] = true
+			seen_accum[pos.y+i][pos.x+k] = true
+			-- update seen bounding box
+			seen.min.y = _min(pos.y+i, seen.min.y)
+			seen.min.x = _min(pos.x+k, seen.min.x)
+			seen.max.y = _max(pos.y+i, seen.max.y)
+			seen.max.x = _max(pos.x+k, seen.max.x)
 		end
 	end
+	local delta = (seen.max - seen.min) * TILESIZE
+	delta = _min(love.graphics.getWidth()/delta.x, love.graphics.getHeight()/delta.y)
+	self.zoom = _min(delta, 8)
 
 	self:see(pos+vector( 1, 0), max, steps + 1)
 	self:see(pos+vector( 0, 1), max, steps + 1)

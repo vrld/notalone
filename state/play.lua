@@ -15,11 +15,29 @@ function st:enter(pre, grid, pos, life)
 	love.graphics.setBackgroundColor(0,0,0)
 
 	level = Level.new(grid)
-	player.init(level, pos, life)
+	player.init(pos, life)
 	camera = Camera.new(player.pixelpos(),1)
 	level:see(pos, 3)
 	self.level = level
-    love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
+--	love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
+
+	function player.ondie()
+		player.lifespan = player.lifespan + 5
+		level:unsee()
+		player.reset()
+		level:see(player.pos,1)
+	end
+
+	function player.onmove(pos, direction)
+		local newpos = pos + direction
+		if grid[newpos.y][newpos.x] == 0 then
+			return
+		end
+
+		player.pos = newpos
+		player.trail:add(player.pixelpos())
+		level:see(newpos)
+	end
 end
 
 function st:draw()
@@ -27,6 +45,7 @@ function st:draw()
 	level:draw(camera)
 	level:drawFog(camera)
 	player.draw()
+	Trails.draw()
 	camera:postdraw()
 
 	local frac = 1 - player.age / player.lifespan
@@ -48,13 +67,15 @@ end
 function st:update(dt)
 	if self.paused then return end
 
-	local min,max = player.seen.min, player.seen.max
+	local min,max = level.seen.min, level.seen.max
 	local center = ((max - min) / 2 + min) * TILESIZE - vector(TILESIZE/2, TILESIZE/2)
 	camera.pos = camera.pos - (camera.pos - (.75 * center + .25 * player.pixelpos())) * dt * 10
-	camera.zoom = camera.zoom - (camera.zoom - player.zoom) * dt * 10
+	camera.zoom = camera.zoom - (camera.zoom - level.zoom) * dt * 10
 
 	player.update(dt, level)
+	Trails.update(dt)
 	if level.grid[player.pos.y][player.pos.x] == 2 then
+		Trails.clear()
 		Gamestate.switch(Gamestate.won, player, camera)
 	end
 end
