@@ -209,6 +209,12 @@ function Deus.addSign(x, y, decal)
 	pipe:send(string.format("signum:%s:%s:%s\n", x,y, decal))
 end
 
+function Deus.killPlayer()
+	local pipe = Deus.pipe
+	assert(pipe, "Give me a pipe, please!")
+	pipe:send(string.format("rumpas"))
+end
+
 function getMessage(pipe)
 	local text = pipe:receive()
 	if not text then return end
