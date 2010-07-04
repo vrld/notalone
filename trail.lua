@@ -39,11 +39,33 @@ local function jitter(path, amount)
 	return path
 end
 
-function Trail(pos)
-	return setmetatable({pos}, trail)
+Trails = {}
+local thetrails = {}
+function Trails.add(t)
+	thetrails[t] = t
+end
+function Trails.remove(t)
+	thetrails[t] = nil
+end
+function Trails.update(dt)
+	for t,_ in pairs(thetrails) do t:update(dt) end
+end
+function Trails.draw()
+	for t,_ in pairs(thetrails) do t:draw() end
+end
+function Trails.clear()
+	thetrails = {}
+end
+
+function Trail(pos, life, size)
+	local t = setmetatable({pos, life = life or 20, size = size or 50}, trail)
+	t.lifetime = t.life
+	Trails.add(t)
+	return t
 end
 
 function trail:add(pos)
+	self.life = self.lifetime
 	if #self < 2 then
 		self[#self+1] = pos
 		if #self == 2 then
@@ -53,7 +75,7 @@ function trail:add(pos)
 	end
 
 	self[#self+1] = pos
-	while #self > 40 do
+	while #self > self.size do
 		table.remove(self, 1)
 	end
 	self.path = topoly( jitter( subdivide(self, .8, 2) ) )
@@ -61,7 +83,13 @@ end
 
 function trail:draw()
 	if #self < 2 then return end
-	love.graphics.setLine(3)
-	love.graphics.setColor(255,60,50,200)
+	love.graphics.setColor(255,60,50,200 * (self.life / self.lifetime))
 	love.graphics.line(self.path)
+end
+
+function trail:update(dt)
+	self.life = self.life - dt
+	if self.life < 0 then
+		Trails.remove(self)
+	end
 end
