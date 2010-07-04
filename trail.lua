@@ -68,7 +68,7 @@ end
 
 function trail:add(pos)
 	self.life = self.lifetime
-	if #self.path < 2 then
+	if #self < 2 then
 		self[#self+1] = pos
 		if #self == 2 then
 			self.path = {self[1].x, self[1].y, self[2].x, self[2].y}
@@ -78,7 +78,7 @@ function trail:add(pos)
 
 	-- we don't need to calculate the whole subdivision every time:
 	--   use last three positions for subdivision
-	--   the first new point replaces the last old point of the path
+	--   the first new point replaces the last old point
 	self[#self+1] = pos
 	local count = #self.path
 	local points = {vector(self.path[count-3], self.path[count-2]),
