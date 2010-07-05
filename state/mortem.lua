@@ -1,5 +1,5 @@
-require "gamestate"
 require "net/pipes"
+require "gamestate"
 require "net/protocol"
 require "gui/dialog"
 
@@ -19,7 +19,7 @@ end
 function connect:update(dt)
 	self.t = self.t + dt
 	self.alpha = 155 + math.sin(self.t) * 100
-	assert(coroutine.resume(self.handshake, Mortem.pipe))
+	assert(coroutine.resume(self.handshake, dt))
 	if coroutine.status(self.handshake) == "dead" then
 		substate = get_world
 	end

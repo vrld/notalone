@@ -1,34 +1,7 @@
-Pipe = {}
-Pipe.__index = Pipe
-
 local function strip_newline(s)
 	if not s then return end
 	-- asume newline!
 	return string.sub(s, 1,-2)
-end
-
-function Pipe.new()
-	return setmetatable({}, Pipe)
-end
-
-function Pipe:send(str)
-	self[#self+1] = str
-end
-
-function Pipe:receive()
-	if #self > 0 then
-		return table.remove(self, 1)
-	end
-	return nil
-end
-
-function Pipe:gettext()
-	local text
-	while true do
-		text = self:receive()
-		if text then return text end
-		coroutine.yield()
-	end
 end
 
 NetPipe = {}
@@ -50,7 +23,6 @@ function NetPipe.new(port, addr)
 end
 
 function NetPipe:send(str, addr, port)
-	print(str)
 	if addr and port then
 		return assert(self.udp:sendto(str, addr, port))
 	end
@@ -65,7 +37,7 @@ function NetPipe:gettext()
 	local text
 	while true do
 		text = self:receive()
-		if text then print(text) return text end
+		if text then return text end
 		coroutine.yield()
 	end
 end

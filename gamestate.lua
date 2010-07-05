@@ -31,10 +31,10 @@ function love.keypressed(key, unicode)
 end
 
 function love.keyreleased(key)
---	if key == "q" then
---		love.event.push('q')
+	if key == "q" then
+		love.event.push('q')
 --		profiler.stop()
---	end
+	end
 	Gamestate.current:keyreleased(key)
 end
 

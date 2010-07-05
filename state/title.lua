@@ -28,7 +28,7 @@ local function makeDialogDeus()
     end
 
     local btnClose = Button.new("Cancel", dlgDeus.pos + vector(380, 150), vector(110,40), font2)
-    function btnClose.onClick() 
+    function btnClose.onClick()
         dlgDeus:close()
     end
 

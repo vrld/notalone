@@ -47,17 +47,24 @@ function Deus.handshake(pipe)
 	end
 end
 
-function Mortem.handshake()
+function Mortem.handshake(dt)
 	local pipe = Mortem.pipe
 	assert(pipe, "Give me a pipe, please!")
+	local time = 0
 
 	local text
 	while true do
-		pipe:send("Pater Noster\n")
+		if time <= 0 then
+			pipe:send("Pater Noster\n")
+			time = .5 -- poll every half second
+		end
 		text = pipe:gettext()
 		if text == "qui es in caelis\n" then
 			return true
 		end
+		-- update poll timeout
+		local dt = coroutine.yield()
+		time = time - dt
 	end
 end
 
