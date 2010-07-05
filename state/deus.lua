@@ -5,6 +5,37 @@ require "net/protocol"
 require "util/camera"
 require "gui/dialog"
 
+Inventory = { selected = 1, items = {} }
+-- circle selection in specified direction
+function Inventory.select(direction)
+	Inventory.selected = Inventory.selected - direction
+	if Inventory.selected < 1 then
+		Inventory.selected = #Inventory.items
+	elseif Inventory.selected > #Inventory.items then
+		Inventory.selected = 1
+	end
+end
+
+function Inventory.add(item, ...)
+	if not item then return end
+	Inventory.items[#Inventory.items+1] = item
+	Inventory.add(...)
+end
+
+function Inventory.remove(k)
+	table.remove(Inventory.items, k)
+end
+
+function Inventory.draw()
+	local ITEMSIZE, PADDING, SELECTIONSIZE = 32, 5, 40
+	local scale = SELECTIONSIZE / ITEMSIZE
+	local invsize = #Inventory.items * (ITEMSIZE + PADDING) + (SELECTIONSIZE - ITEMSIZE) - PADDING
+	local x = (love.graphics.getWidth() - invsize) / 2
+	for i,item in ipairs(Inventory.items) do
+		item:draw(x, love.graphics.getHeight() - ITEMSIZE - PADDING, 0, scale, scale)
+	end
+end
+
 Gamestate.deus = Gamestate.new()
 local st = Gamestate.deus
 
@@ -102,9 +133,6 @@ function play:update(dt)
 	else
 		keydelay = keydelay - dt
 	end
-
-	-- update zoom level
-	-- update camera pos
 end
 
 function play:draw()
@@ -117,15 +145,15 @@ function play:draw()
 	love.graphics.setColor(255,160,0,100)
 	love.graphics.rectangle('fill', selected_pos.x*TILESIZE, selected_pos.y*TILESIZE, 32,32)
 	camera:postdraw()
-	-- items:draw()
-	-- selectedItem:draw()
+	Inventory.draw()
 	-- time:draw()
 end
 
 --
 -- Main gamestate. Forwards to substates
 --
-function st:enter(pre, port, maze, startpos)
+local camera
+function st:enter(pre, port, grid, startpos, exit)
 	Deus.pipe = NetPipe.new(port)
 	love.graphics.setBackgroundColor(0,0,0)
 	world, playerpos = maze, startpos
@@ -134,9 +162,25 @@ function st:enter(pre, port, maze, startpos)
 	wait_for_client.handshake = coroutine.create(Deus.handshake)
 	send_world.sendworld = coroutine.create(Deus.sendworld)
 
+	player.init(startpos, 20)
 	function player.ondie()
 		Deus.killPlayer()
 	end
+
+	level = Level.new(grid)
+	local levelsize = vector(#grid[1], #grid) * TILESIZE
+	local zoom = math.min(love.graphics.getWidth() / levelsize.x,
+	                      love.graphics.getHeight() / levelsize.y)
+	camera = Camera.new(levelsize / 2, zoom)
+
+	Inventory.selected = 1
+	Inventory.items = {
+		wrapDraw(love.graphics.newImage('images/left.png')),
+		wrapDraw(love.graphics.newImage('images/right.png')),
+		wrapDraw(love.graphics.newImage('images/up.png')),
+		wrapDraw(love.graphics.newImage('images/down.png')),
+		wrapDraw(love.graphics.newImage('images/deadend.png')),
+	}
 end
 
 function st:draw()
