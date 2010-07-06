@@ -1,5 +1,6 @@
 require "gamestate"
 require "maze"
+require "items"
 require "net/pipes"
 require "net/protocol"
 require "util/camera"
@@ -32,7 +33,15 @@ function Inventory.draw()
 	local invsize = #Inventory.items * (ITEMSIZE + PADDING) + (SELECTIONSIZE - ITEMSIZE) - PADDING
 	local x = (love.graphics.getWidth() - invsize) / 2
 	for i,item in ipairs(Inventory.items) do
-		item:draw(x, love.graphics.getHeight() - ITEMSIZE - PADDING, 0, scale, scale)
+		if i == Inventory.selected then
+			love.graphics.setColor(255,255,200)
+			item.obj:draw(x, love.graphics.getHeight() - SELECTIONSIZE - PADDING, 0, scale, scale)
+			x = x + SELECTIONSIZE + PADDING
+		else
+			love.graphics.setColor(255,255,255,150)
+			item.obj:draw(x, love.graphics.getHeight() - ITEMSIZE - PADDING)
+			x = x + ITEMSIZE + PADDING
+		end
 	end
 end
 
@@ -40,6 +49,7 @@ Gamestate.deus = Gamestate.new()
 local st = Gamestate.deus
 
 local substate, world, playerpos, level, pipe
+local camera
 
 local wait_for_client = {alpha = 155, t = 0}
 local send_world = {}
@@ -73,10 +83,6 @@ function send_world:update(dt)
 	assert(coroutine.resume(self.sendworld, world, playerpos))
 	if coroutine.status(self.sendworld) == "dead" then
 		level = Level.new(world)
-		camera = Camera.new(
-			vector(#world[1]+2, #world+2) * TILESIZE / 2,
-			math.min(love.graphics.getWidth()  / ((#world[1]+1)*TILESIZE),
-					 love.graphics.getHeight() / ((#world+1)*TILESIZE)))
 		substate = play
 		selected_pos = vector(math.floor(#world[1]/2), math.floor(#world/2))
 	end
@@ -87,18 +93,27 @@ end
 local time, time_since_last_sync = 0,0
 local keydelay = 0
 local min, max = math.min, math.max
-local actions = {
+local actions
+actions = {
 	modifier_none = {
-		up    = function() selected_pos.y = max(selected_pos.y - 1, 0) end,
-		down  = function() selected_pos.y = min(selected_pos.y + 1, #world) end,
-		left  = function() selected_pos.x = max(selected_pos.x - 1, 0) end,
-		right = function() selected_pos.x = min(selected_pos.x + 1, #world[1]) end,
+		up = function()
+			selected_pos.y = max(selected_pos.y - 1, 2)
+		end,
+		down = function()
+			selected_pos.y = min(selected_pos.y + 1, #world-1)
+		end,
+		left = function()
+			selected_pos.x = max(selected_pos.x - 1, 2)
+		end,
+		right = function()
+			selected_pos.x = min(selected_pos.x + 1, #world[1]-1)
+		end,
 	},
 	modifier_zoom = {
 		up    = function() --[[ increase zoom level --]] end,
 		down  = function() --[[ decrease zoom level --]] end,
-		left  = function() --[[ select other item --]] end,
-		right = function() --[[ select other item --]] end,
+		left  = function() Inventory.select(1) end,
+		right = function() Inventory.select(-1) end,
 	},
 }
 
@@ -106,7 +121,7 @@ function play:update(dt)
 	time = time + dt
 	time_since_last_sync = time_since_last_sync + dt
 
-	player:update(dt)
+	player.update(dt)
 
 	if time_since_last_sync > .5 then
 		Deus.sendClock(time)
@@ -118,16 +133,32 @@ function play:update(dt)
 		player.pos = vector(tonumber(message[2]), tonumber(message[3]))
 	end
 
+	Items.update(dt)
 
 	if keydelay <= 0 then
-		keydelay = .15
+		keydelay = .1
 
-		-- TODO: select keymap
 		local keyaction = actions.modifier_none
+		if love.keyboard.isDown('a') then
+			keyaction = actions.modifier_zoom
+		end
 		for key, fun in pairs(keyaction) do
 			if love.keyboard.isDown(key) then
 				fun()
 			end
+		end
+
+		if love.keyboard.isDown('s') then
+			Inventory.select(-1)
+		end
+
+		if love.keyboard.isDown('d') and level.grid[selected_pos.y][selected_pos.x] ~= 0 then
+			local item = Inventory.items[Inventory.selected]
+			Items.add(item.obj, selected_pos:clone())
+			Deus.addSign(selected_pos.x, selected_pos.y, item.what)
+			Inventory.remove(Inventory.selected)
+			Inventory.select(1)
+			keydelay = .2
 		end
 
 	else
@@ -137,13 +168,15 @@ end
 
 function play:draw()
 	camera:predraw()
-	level:draw()
+	level:draw(camera, true)
 	player.draw()
-	-- selection:draw()
-	love.graphics.setColor(255,255,255)
-	love.graphics.rectangle('fill', playerpos.x*TILESIZE, playerpos.y*TILESIZE, 32,32)
-	love.graphics.setColor(255,160,0,100)
-	love.graphics.rectangle('fill', selected_pos.x*TILESIZE, selected_pos.y*TILESIZE, 32,32)
+	Items.draw()
+	if level.grid[selected_pos.y][selected_pos.x] ~= 0 then
+		love.graphics.setColor(0,255,100,200)
+	else
+		love.graphics.setColor(255,160,0,100)
+	end
+	love.graphics.rectangle('fill', (selected_pos.x-1)*TILESIZE, (selected_pos.y-1)*TILESIZE, 32,32)
 	camera:postdraw()
 	Inventory.draw()
 	-- time:draw()
@@ -152,11 +185,11 @@ end
 --
 -- Main gamestate. Forwards to substates
 --
-local camera
 function st:enter(pre, port, grid, startpos, exit)
+	Level.init()
 	Deus.pipe = NetPipe.new(port)
 	love.graphics.setBackgroundColor(0,0,0)
-	world, playerpos = maze, startpos
+	world, playerpos = grid, startpos
 	substate = wait_for_client
 
 	wait_for_client.handshake = coroutine.create(Deus.handshake)
@@ -171,15 +204,15 @@ function st:enter(pre, port, grid, startpos, exit)
 	local levelsize = vector(#grid[1], #grid) * TILESIZE
 	local zoom = math.min(love.graphics.getWidth() / levelsize.x,
 	                      love.graphics.getHeight() / levelsize.y)
-	camera = Camera.new(levelsize / 2, zoom)
+	camera = Camera.new(levelsize/2, zoom)
 
 	Inventory.selected = 1
 	Inventory.items = {
-		wrapDraw(love.graphics.newImage('images/left.png')),
-		wrapDraw(love.graphics.newImage('images/right.png')),
-		wrapDraw(love.graphics.newImage('images/up.png')),
-		wrapDraw(love.graphics.newImage('images/down.png')),
-		wrapDraw(love.graphics.newImage('images/deadend.png')),
+		{obj = wrapDraw(love.graphics.newImage('images/left.png')),    what = "left"},
+		{obj = wrapDraw(love.graphics.newImage('images/right.png')),   what = "right"},
+		{obj = wrapDraw(love.graphics.newImage('images/up.png')),      what = "up"},
+		{obj = wrapDraw(love.graphics.newImage('images/down.png')),    what = "down"},
+		{obj = wrapDraw(love.graphics.newImage('images/deadend.png')), what = "deadend"},
 	}
 end
 

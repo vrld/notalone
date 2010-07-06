@@ -92,7 +92,7 @@ function Level:see(pos, max, steps)
 	self:see(pos+vector( 0,-1), max, steps + 1)
 end
 
-function Level:draw(camera)
+function Level:draw(camera, seeall)
 	local walls, ground = Level.tiles.walls, Level.tiles.ground
 	local pos, source
 	local grid = self.grid
@@ -108,7 +108,7 @@ function Level:draw(camera)
 	love.graphics.setColor(255,255,255)
 	math.randomseed(#grid * #grid[1])
 	for y,x in spatialrange(y1,y2, x1,x2) do
-		if self.seen[y][x] then
+		if seeall or self.seen[y][x] then
 			pos = vector(x-1,y-1) * TILESIZE
 			if grid[y][x] == 0 then
 				walls:draw(self:_tilenumber(x,y)+1, pos:unpack())

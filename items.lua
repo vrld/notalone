@@ -14,7 +14,7 @@ end
 local item = {}
 item.__index = item
 function item:draw(seen)
-	if seen[self.pos.y] and seen[self.pos.y][self.pos.x] then
+	if not seen or (seen and seen[self.pos.y] and seen[self.pos.y][self.pos.x]) then
 		self.obj:draw(((self.pos - vector(1,1)) * TILESIZE):unpack())
 	end
 end

@@ -58,12 +58,12 @@ function Mortem.handshake(dt)
 			pipe:send("Pater Noster\n")
 			time = .5 -- poll every half second
 		end
-		text = pipe:gettext()
-		if text == "qui es in caelis\n" then
+		text = pipe:receive()
+		if text == "qui es in caelis" then
 			return true
 		end
 		-- update poll timeout
-		local dt = coroutine.yield()
+		dt = coroutine.yield()
 		time = time - dt
 	end
 end
@@ -210,10 +210,10 @@ function Deus.sendClock(t)
 	pipe:send(string.format("tempus:%s\n",t))
 end
 
-function Deus.addSign(x, y, decal)
+function Deus.addSign(x, y, sign)
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
-	pipe:send(string.format("signum:%s:%s:%s\n", x,y, decal))
+	pipe:send(string.format("signum:%s:%s:%s\n", x,y, sign))
 end
 
 function Deus.killPlayer()
