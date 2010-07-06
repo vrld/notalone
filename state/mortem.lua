@@ -6,7 +6,7 @@ require "gui/dialog"
 Gamestate.mortem = Gamestate.new()
 local st = Gamestate.mortem
 
-local substate, world, pipe
+local substate, world, pipe, camera
 
 local connect = {alpha = 155, t = 0}
 local get_world = {}
@@ -31,9 +31,11 @@ function get_world:draw()
 end
 
 function get_world:update(dt)
-	world = assert(coroutine.resume(self.getworld))
+	-- TODO: get exit
+	world, start = assert(coroutine.resume(self.getworld))
 	if coroutine.status(self.getworld) == "dead" then
-		print(world)
+		player.init(start, 20) -- TODO: life and stuff
+		camera = Camera.new(player.pixelpos(),1)
 		substate = play
 	end
 end
@@ -48,7 +50,9 @@ function play:update(dt)
 		elseif message[1] == "rumpas" then -- die
 			player.die()
 		elseif message[1] == "signum" then
-			-- add item
+			local pos = vector(tonumber(message[2]), tonumber(message[3]))
+			local item = wrapDraw(love.graphics.newImage('images/'..message[4]..'.png'))
+			Items.add(item, pos)
 		end
 	end
 
@@ -75,7 +79,7 @@ function play:draw()
 	camera:predraw()
 	level:draw()
 	level:drawFog()
---	items:draw()
+	Items.draw(level.seen)
 	player.draw()
 	camera:postdraw()
 --	time:draw()
