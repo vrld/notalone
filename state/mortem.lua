@@ -41,12 +41,12 @@ function get_world:update(dt)
 end
 
 -- play state
-local keydelay = 0
+local keydelay, time = 0,1
 function play:update(dt)
 	local message = getMessage(Deus.pipe)
 	if message then
 		if message[1] == "tempus" then -- time update
-			print("Time:",message[2])
+            time = tonumber(message[2])
 		elseif message[1] == "rumpas" then -- die
 			player.die()
 		elseif message[1] == "signum" then
@@ -82,7 +82,12 @@ function play:draw()
 	Items.draw(level.seen)
 	player.draw()
 	camera:postdraw()
---	time:draw()
+
+	local barwith = love.graphics.getWidth() - 20
+	love.graphics.setColor(255,255,255,100)
+	love.graphics.rectangle('fill', 10, 10, barwith, 7)
+	love.graphics.setColor(255,255,255)
+	love.graphics.rectangle('fill', 10, 10, time*barwith, 7)
 end
 
 -- parent state

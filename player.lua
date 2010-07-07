@@ -37,15 +37,16 @@ function player.draw()
 	love.graphics.rectangle('fill', (player.pos.x-1)*TILESIZE, (player.pos.y-1)*TILESIZE, TILESIZE, TILESIZE)
 end
 
+function player.grow(dt)
+    player.age = player.age + dt
+    if player.age > player.lifespan then
+        player.ondie()
+        return
+    end
+end
+
 local n, keydelay = 1, 0
 function player.update(dt)
-	player.age = player.age + dt
-
-	if player.age > player.lifespan then
-		player.ondie()
-		return
-	end
-
 	if keydelay <= 0 then
 		local dir
 		if love.keyboard.isDown('up') then

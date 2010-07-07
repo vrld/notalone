@@ -121,10 +121,11 @@ function play:update(dt)
 	time = time + dt
 	time_since_last_sync = time_since_last_sync + dt
 
+    player.grow(dt)
 	player.update(dt)
 
-	if time_since_last_sync > .5 then
-		Deus.sendClock(time)
+	if time_since_last_sync > .25 then
+		Deus.sendClock(1 - player.lifespan / player.age)
 		time_since_last_sync = 0
 	end
 
@@ -179,7 +180,12 @@ function play:draw()
 	love.graphics.rectangle('fill', (selected_pos.x-1)*TILESIZE, (selected_pos.y-1)*TILESIZE, 32,32)
 	camera:postdraw()
 	Inventory.draw()
-	-- time:draw()
+
+	local barwith = love.graphics.getWidth() - 20
+	love.graphics.setColor(255,255,255,100)
+	love.graphics.rectangle('fill', 10, 10, barwith, 7)
+	love.graphics.setColor(255,255,255)
+	love.graphics.rectangle('fill', 10, 10, (1 - player.age / player.lifespan) * barwith, 7)
 end
 
 --
