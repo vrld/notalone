@@ -19,7 +19,6 @@ function st:enter(pre, grid, pos, exit, life)
 	player.init(pos, life)
 	camera = Camera.new(player.pixelpos(),1)
 	level:see(pos, 3)
-	self.level = level
 --	love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
 
 	function player.ondie()

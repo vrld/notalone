@@ -14,7 +14,7 @@ player = {
 }
 function player.init(start, lifespan)
 	assert(start, "start position must be supplied")
-	player.startpos = start:clone()
+	player.startpos = start
 	player.lifespan = lifespan or 45
 	player.lifes = 0
 

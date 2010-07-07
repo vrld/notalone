@@ -125,13 +125,14 @@ function play:update(dt)
 	player.update(dt)
 
 	if time_since_last_sync > .25 then
-		Deus.sendClock(1 - player.lifespan / player.age)
+		Deus.sendClock(player.age, player.lifespan)
 		time_since_last_sync = 0
 	end
 
 	local message = getMessage(Deus.pipe)
 	if message and message[1] == "moveo" then
 		player.pos = vector(tonumber(message[2]), tonumber(message[3]))
+		player.trail:add(player.pixelpos())
 	end
 
 	Items.update(dt)
@@ -204,6 +205,8 @@ function st:enter(pre, port, grid, startpos, exit)
 	player.init(startpos, 20)
 	function player.ondie()
 		Deus.killPlayer()
+		player.age = 0
+		player.lifespan = player.lifespan + 5
 	end
 
 	level = Level.new(grid)

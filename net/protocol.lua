@@ -20,10 +20,18 @@ function string:split(sep)
 	return fields
 end
 
-local function subtable(tbl, startindex)
+local function map(tbl, fun)
+	for i,v in pairs(tbl) do
+		tbl[i] = fun(v)
+	end
+	return tbl
+end
+
+local function subtable(tbl, startindex, apply)
+	local apply = apply or function(v) return v end
 	local function skip_start(skip, v, ...)
 		if skip > 1 then return skip_start(skip-1, ...) end
-		return {v, ...}
+		return map({v, ...}, apply)
 	end
 	return skip_start(startindex, unpack(tbl))
 end
@@ -159,8 +167,8 @@ function Mortem.getworld()
 
 	repeat
 		row = assert(getrow())
-		n = row[1]
-		row = subtable(row, 2)
+		n = tonumber(row[1])
+		row = subtable(row, 2, function(v) return tonumber(v) end)
 		pipe:send(string.format("Amen:%d\n", row_checksum(unpack(row))))
 		text = pipe:gettext()
 		if text == "Amen" then
@@ -204,10 +212,10 @@ function Mortem.move(x, y)
 	pipe:send(string.format("moveo:%s:%s\n", x, y))
 end
 
-function Deus.sendClock(t)
+function Deus.sendClock(age, span)
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
-	pipe:send(string.format("tempus:%s\n",t))
+	pipe:send(string.format("tempus:%s:%s\n",age,span))
 end
 
 function Deus.addSign(x, y, sign)
@@ -219,7 +227,7 @@ end
 function Deus.killPlayer()
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
-	pipe:send(string.format("rumpas"))
+	pipe:send("rumpas\n")
 end
 
 function getMessage(pipe)

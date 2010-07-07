@@ -6,7 +6,7 @@ require "gui/dialog"
 Gamestate.mortem = Gamestate.new()
 local st = Gamestate.mortem
 
-local substate, world, pipe, camera
+local substate, world, camera, level
 
 local connect = {alpha = 155, t = 0}
 local get_world = {}
@@ -32,9 +32,13 @@ end
 
 function get_world:update(dt)
 	-- TODO: get exit
-	world, start = assert(coroutine.resume(self.getworld))
+	local status
+	status, world, start = assert(coroutine.resume(self.getworld))
 	if coroutine.status(self.getworld) == "dead" then
+		print(world, #world, start)
 		player.init(start, 20) -- TODO: life and stuff
+		level = Level.new(world)
+		level:see(start, 3)
 		camera = Camera.new(player.pixelpos(),1)
 		substate = play
 	end
@@ -43,12 +47,15 @@ end
 -- play state
 local keydelay, time = 0,1
 function play:update(dt)
-	local message = getMessage(Deus.pipe)
+	player.age = player.age + dt
+
+	local message = getMessage(Mortem.pipe)
 	if message then
 		if message[1] == "tempus" then -- time update
-            time = tonumber(message[2])
+			player.age = tonumber(message[2])
+			player.lifespan = tonumber(message[3])
 		elseif message[1] == "rumpas" then -- die
-			player.die()
+			player.ondie()
 		elseif message[1] == "signum" then
 			local pos = vector(tonumber(message[2]), tonumber(message[3]))
 			local item = wrapDraw(love.graphics.newImage('images/'..message[4]..'.png'))
@@ -60,34 +67,43 @@ function play:update(dt)
 		keydelay = .15
 
 		if love.keyboard.isDown('up') then
-			player:moveUp()
+			player.onmove(player.pos, vector(0,-1))
 		elseif love.keyboard.isDown('down') then
-			player:moveDown()
+			player.onmove(player.pos, vector(0, 1))
 		end
 		if love.keyboard.isDown('left') then
-			player:moveLeft()
+			player.onmove(player.pos, vector(-1,0))
 		elseif love.keyboard.isDown('right') then
-			player:moveRight()
+			player.onmove(player.pos, vector( 1,0))
 		end
 
 	else
 		keydelay = keydelay - dt
 	end
+
+	-- update camera zoom
+	local min,max = level.seen.min, level.seen.max
+	local center = ((max - min) / 2 + min) * TILESIZE - vector(TILESIZE/2, TILESIZE/2)
+	camera.pos = camera.pos - (camera.pos - (.75 * center + .25 * player.pixelpos())) * dt * 10
+	camera.zoom = camera.zoom - (camera.zoom - level.zoom) * dt * 10
+
+	Trails.update(dt)
 end
 
 function play:draw()
 	camera:predraw()
-	level:draw()
-	level:drawFog()
+	level:draw(camera)
+	level:drawFog(camera)
 	Items.draw(level.seen)
 	player.draw()
+	Trails.draw()
 	camera:postdraw()
 
 	local barwith = love.graphics.getWidth() - 20
 	love.graphics.setColor(255,255,255,100)
 	love.graphics.rectangle('fill', 10, 10, barwith, 7)
 	love.graphics.setColor(255,255,255)
-	love.graphics.rectangle('fill', 10, 10, time*barwith, 7)
+	love.graphics.rectangle('fill', 10, 10, (1 - player.age/player.lifespan)*barwith, 7)
 end
 
 -- parent state
@@ -108,7 +124,7 @@ function st:enter(pre, ip, port)
 
 	function player.onmove(pos, direction)
 		local newpos = pos + direction
-		if grid[newpos.y][newpos.x] == 0 then
+		if world[newpos.y][newpos.x] == 0 then
 			return
 		end
 
