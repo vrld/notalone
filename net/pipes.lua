@@ -42,12 +42,13 @@ function NetPipe:gettext()
 	end
 end
 
-function NetPipe:receive_and_bind()
+function NetPipe:receivefrom()
 	local what, addr, port = self.udp:receivefrom()
-	if what and addr and port then
-		assert(self.udp:setpeername(addr, port))
-	end
-	return strip_newline(what)
+	return strip_newline(what), addr, port
+end
+
+function NetPipe:bind(addr, port)
+	assert(self.udp:setpeername(addr, port))
 end
 
 function NetPipe:unbind()

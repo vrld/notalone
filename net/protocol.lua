@@ -45,12 +45,12 @@ function Deus.handshake(pipe)
 
 	local text
 	while true do
-		text = pipe:receive_and_bind()
-		if text == "Pater Noster" then
+		text,addr,port = pipe.udp:receivefrom()
+		if text == "Pater Noster\n" and addr and port then
+			pipe:bind(addr, port)
 			pipe:send("qui es in caelis\n")
 			return
 		end
-		pipe:unbind()
 		coroutine.yield()
 	end
 end
@@ -228,6 +228,12 @@ function Deus.killPlayer()
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
 	pipe:send("rumpas\n")
+end
+
+function Deus.exit()
+	local pipe = Deus.pipe
+	assert(pipe, "Give me a pipe, please!")
+	pipe:send("egressus\n")
 end
 
 function getMessage(pipe)
