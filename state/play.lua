@@ -77,10 +77,12 @@ function st:update(dt)
 	camera.pos = camera.pos - (camera.pos - (.75 * center + .25 * player.pixelpos())) * dt * 10
 	camera.zoom = camera.zoom - (camera.zoom - level.zoom) * dt * 10
 
+	player.grow(dt)
 	player.update(dt, level)
 	Trails.update(dt)
 	if level.grid[player.pos.y][player.pos.x] == 2 then
 		Trails.clear()
+		self.level = level
 		Gamestate.switch(Gamestate.won, player, camera)
 	end
 

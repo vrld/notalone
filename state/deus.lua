@@ -48,7 +48,7 @@ end
 Gamestate.deus = Gamestate.new()
 local st = Gamestate.deus
 
-local substate, world, playerpos, level, pipe
+local substate, world, playerpos, level, pipe, exit
 local camera
 
 local wait_for_client = {alpha = 155, t = 0}
@@ -93,36 +93,18 @@ end
 local time, time_since_last_sync = 0,0
 local keydelay = 0
 local min, max = math.min, math.max
-local actions
-actions = {
-	modifier_none = {
-		up = function()
-			selected_pos.y = max(selected_pos.y - 1, 2)
-		end,
-		down = function()
-			selected_pos.y = min(selected_pos.y + 1, #world-1)
-		end,
-		left = function()
-			selected_pos.x = max(selected_pos.x - 1, 2)
-		end,
-		right = function()
-			selected_pos.x = min(selected_pos.x + 1, #world[1]-1)
-		end,
-	},
-	modifier_zoom = {
-		up    = function() --[[ increase zoom level --]] end,
-		down  = function() --[[ decrease zoom level --]] end,
-		left  = function() Inventory.select(1) end,
-		right = function() Inventory.select(-1) end,
-	},
-}
 
 function play:update(dt)
 	time = time + dt
 	time_since_last_sync = time_since_last_sync + dt
 
-    player.grow(dt)
+	player.grow(dt)
 	player.update(dt)
+
+	if player.pos == exit then
+		Deus.exit()
+		-- TODO: go to highscores
+	end
 
 	if time_since_last_sync > .25 then
 		Deus.sendClock(player.age, player.lifespan)
@@ -140,17 +122,20 @@ function play:update(dt)
 	if keydelay <= 0 then
 		keydelay = .1
 
-		local keyaction = actions.modifier_none
-		if love.keyboard.isDown('a') then
-			keyaction = actions.modifier_zoom
+		if love.keyboard.isDown("up") then
+			selected_pos.y = max(selected_pos.y - 1, 2)
+		elseif love.keyboard.isDown("down") then
+			selected_pos.y = min(selected_pos.y + 1, #world-1)
 		end
-		for key, fun in pairs(keyaction) do
-			if love.keyboard.isDown(key) then
-				fun()
-			end
+		if love.keyboard.isDown("left") then
+			selected_pos.x = max(selected_pos.x - 1, 2)
+		elseif love.keyboard.isDown("right") then
+			selected_pos.x = min(selected_pos.x + 1, #world[1]-1)
 		end
 
-		if love.keyboard.isDown('s') then
+		if love.keyboard.isDown('a') then
+			Inventory.select( 1)
+		elseif love.keyboard.isDown('s') then
 			Inventory.select(-1)
 		end
 
@@ -159,7 +144,8 @@ function play:update(dt)
 			Items.add(item.obj, selected_pos:clone())
 			Deus.addSign(selected_pos.x, selected_pos.y, item.what)
 			Inventory.remove(Inventory.selected)
-			Inventory.select(1)
+			Inventory.selected = math.min(Inventory.selected, #Inventory.items)
+--			Inventory.select(1)
 			keydelay = .2
 		end
 
@@ -192,7 +178,7 @@ end
 --
 -- Main gamestate. Forwards to substates
 --
-function st:enter(pre, port, grid, startpos, exit)
+function st:enter(pre, port, grid, startpos, exitpos)
 	Level.init()
 	Deus.pipe = NetPipe.new(port)
 	love.graphics.setBackgroundColor(0,0,0)
@@ -210,6 +196,7 @@ function st:enter(pre, port, grid, startpos, exit)
 	end
 
 	level = Level.new(grid)
+	exit = exitpos
 	local levelsize = vector(#grid[1], #grid) * TILESIZE
 	local zoom = math.min(love.graphics.getWidth() / levelsize.x,
 	                      love.graphics.getHeight() / levelsize.y)

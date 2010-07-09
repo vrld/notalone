@@ -60,6 +60,8 @@ function play:update(dt)
 			local pos = vector(tonumber(message[2]), tonumber(message[3]))
 			local item = wrapDraw(love.graphics.newImage('images/'..message[4]..'.png'))
 			Items.add(item, pos)
+		elseif message[1] == "egressus" then
+			print("exit")
 		end
 	end
 

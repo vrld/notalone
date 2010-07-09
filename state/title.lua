@@ -125,14 +125,27 @@ function st:leave()
 	love.graphics.setFont(font1)
 end
 
+-- image scroller and stuff
+local titlescreen = love.graphics.newImage("titlescreen.jpg")
+local mask = love.graphics.newImage("mask.png")
+local pos = vector(0,0)
+local limits = vector(800 - titlescreen:getWidth(), 600 - titlescreen:getHeight())
+local direction = vector(3,2)
 function st:update(dt)
 	Button.update_all(dt)
+	pos = pos - direction * dt
+	if pos.x <= limits.x or pos.x >= 0 then
+		direction.x = - direction.x
+	end
+	if pos.y <= limits.y or pos.y >= 0 then
+		direction.y = - direction.y
+	end
 end
 
 function st:draw()
-	love.graphics.setFont(font2)
-	love.graphics.setColor(0,0,0)
-	love.graphics.print('You Are Not Alone In This World', 200, 100)
+	love.graphics.setColor(255,255,255)
+	love.graphics.draw(titlescreen, pos:unpack())
+	love.graphics.draw(mask, 0,0)
 	Button.draw_all()
 	Input.draw_all()
 	love.graphics.setFont(font1)
