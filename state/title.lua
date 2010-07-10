@@ -139,6 +139,12 @@ function st:enter()
 	btnDeus.nextitem   = btnMortem
 	btnMortem.nextitem = btnAlone
 	Button.add(btnAlone, btnDeus, btnMortem)
+
+	if not source then
+		source = love.audio.newSource('sound/MAZE.mp3', 'stream')
+		source:setLooping(true)
+		love.audio.play(source)
+	end
 end
 
 function st:leave()
