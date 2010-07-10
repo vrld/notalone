@@ -21,22 +21,27 @@ function Dialog:open()
 	self.__draw = love.draw
 	love.draw = function()
 		self.__draw()
-        love.graphics.setColor(0,0,0,100)
-        love.graphics.rectangle('fill', 0,0, love.graphics.getWidth(), love.graphics.getHeight())
+		love.graphics.setColor(0,0,0,100)
+		love.graphics.rectangle('fill', 0,0, love.graphics.getWidth(), love.graphics.getHeight())
 
-        Dialog.bgcolor:set()
-        love.graphics.rectangle('fill', self.pos.x, self.pos.y, self.size:unpack())
-        Dialog.bordercolor:set()
-        love.graphics.rectangle('line', self.pos.x, self.pos.y, self.size:unpack())
+		Dialog.bgcolor:set()
+		love.graphics.rectangle('fill', self.pos.x, self.pos.y, self.size:unpack())
+		Dialog.bordercolor:set()
+		love.graphics.rectangle('line', self.pos.x, self.pos.y, self.size:unpack())
 		self:draw()
 	end
 
 	self.__update = love.update
 	love.update = function(dt)
-        self:update(dt)
+		self:update(dt)
 	end
 
-    return self.enter and self:enter()
+	self.__keypressed = love.keypressed
+	love.keypressed = function(key, unicode)
+		return self.onKeyPressed and self:onKeyPressed(key, unicode)
+	end
+
+	return self.enter and self:enter()
 end
 
 function Dialog:close()
@@ -46,7 +51,10 @@ function Dialog:close()
 	love.update = self.__update
 	self.__update = nil
 
-    return self.leave and self:leave()
+	love.keypressed = self.__keypressed
+	self.__keypressed = nil
+
+	return self.leave and self:leave()
 end
 
 function MessageBox(title, text, onOK)
@@ -58,6 +66,7 @@ function MessageBox(title, text, onOK)
 			onOK()
 		end
 	end
+	btn.active = true
 
 	function dlg:draw()
 		love.graphics.print(title, dlg.pos.x + 10, dlg.pos.y + 30)

@@ -4,6 +4,7 @@ require "level"
 require "gamestate"
 require "items"
 require "state/won"
+require "AnAL"
 
 local level, camera
 Gamestate.play = Gamestate.new()

@@ -5,6 +5,7 @@ require "net/pipes"
 require "net/protocol"
 require "util/camera"
 require "gui/dialog"
+require "AnAL"
 
 Inventory = { selected = 1, items = {} }
 -- circle selection in specified direction
@@ -103,6 +104,7 @@ function play:update(dt)
 
 	if player.pos == exit then
 		Deus.exit()
+		print("EXIT")
 		-- TODO: go to highscores
 	end
 

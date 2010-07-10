@@ -24,7 +24,20 @@ function Input.new(center, size, accept, font)
 		size    = size,
 		font    = font or love.graphics.getFont(),
 		accept  = accept or "[^\n\t]",
-		active  = false}
+		active  = false,
+		keyactions = {}
+	}
+	function inp.keyactions.backspace(self)
+		self.text = self.text:sub(1,-2)
+	end
+	function inp.keyactions.tab(self)
+		if self.nextitem then
+			self.active = false
+			self.nextitem.active = true
+		end
+	end
+	inp.keyactions.enter = inp.keyactions.tab
+	inp.keyactions.kpenter = inp.keyactions.tab
 
 	inp = setmetatable(inp, Input)
 	return inp
@@ -68,11 +81,11 @@ function Input:draw()
 		Input.textcolor:set()
 	end
 
-    if self.active and self.text:len() > 0 then
-        love.graphics.print(self.text .. "|", self.textpos:unpack())
-    else
-        love.graphics.print(self.text, self.textpos:unpack())
-    end
+	if self.active and self.text:len() > 0 then
+		love.graphics.print(self.text .. "|", self.textpos:unpack())
+	else
+		love.graphics.print(self.text, self.textpos:unpack())
+	end
 end
 
 function Input:update(dt, down, mouse)
@@ -82,22 +95,23 @@ end
 function Input:onMouseDown(x,y,btn)
 	if btn ~= 'l' then return end
 	self.active = x >= self.pos.x and x <= self.pos.x + self.size.x and
-	              y >= self.pos.y and y <= self.pos.y + self.size.y
+	y >= self.pos.y and y <= self.pos.y + self.size.y
 	return self.active
 end
 
-function Input:onKeyPressed(unicode)
-	if not self.active then return false end
+function Input:onKeyPressed(key, unicode)
+	if not self.active then return end
 
-	if unicode == 8 then -- backspace
-		self.text = self.text:sub(1,-2)
+	if self.keyactions[key] then
+		self.keyactions[key](self, key, unicode)
 	else
 		local char = string.char(unicode):match(self.accept)
 		if not char then return end
 		self.text = self.text .. char
 	end
 
-    self:centerText()
+	self:centerText()
+	return true
 end
 
 function Input:centerText()
@@ -112,16 +126,9 @@ function Input.handleMouseDown(x,y,btn)
 	end
 end
 
-function Input.handleKeyPressed(unicode)
-    if unicode == 9 then -- tab, cycle to next input
-        for _,inp in pairs(Input.fields) do
-            if inp.active then
-                return inp.ontab and inp:ontab()
-            end
-        end
-    end
+function Input.handleKeyPressed(key, unicode)
 	for _,inp in pairs(Input.fields) do
-		inp:onKeyPressed(unicode)
+		if inp:onKeyPressed(key, unicode) then return end
 	end
 end
 

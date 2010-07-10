@@ -17,11 +17,22 @@ function Button.new(text, center, size, font, onMouseEnter, onMouseLeave, onClic
 	assert(center, "Button '"..text.."' needs a center")
 	assert(size,   "Button '"..text.."' needs a size")
 
-	local btn = {text = text, pos = center - size/2, size = size, hovered = false}
+	local btn = {text = text, pos = center - size/2, size = size, hovered = false, active = false}
 	btn.font         = font or love.graphics.getFont()
 	btn.onMouseEnter = onMouseEnter or __NULLFUNCTION__
 	btn.onMouseLeave = onMouseLeave or __NULLFUNCTION__
 	btn.onClick      = onClick      or __NULLFUNCTION__
+
+	btn.keyactions = {}
+	function btn.keyactions.tab(self)
+		if not self.active then return end
+		if self.nextitem then
+			self.active = false
+			self.nextitem.active = true
+		end
+		return true
+	end
+	btn.keyactions["return"] = function(self) self.onClick() end
 
 	local tw, th = btn.font:getWidth(text), btn.font:getHeight(text)
 	btn.textpos = center - vector(tw/2, -th/2+5)
@@ -47,21 +58,21 @@ end
 
 function Button:draw()
 	love.graphics.setFont(self.font)
-	if self.hovered then
+	if self.hovered or self.active then
 		Button.bgHovered:set()
 	else
 		Button.bgcolor:set()
 	end
 	love.graphics.rectangle('fill', self.pos.x, self.pos.y, self.size:unpack())
 
-	if self.hovered then
+	if self.hovered or self.active then
 		Button.borderHovered:set()
 	else
 		Button.bordercolor:set()
 	end
 	love.graphics.rectangle('line', self.pos.x, self.pos.y, self.size:unpack())
 
-	if self.hovered then
+	if self.hovered or self.active then
 		Button.textHovered:set()
 	else
 		Button.textcolor:set()
@@ -91,6 +102,14 @@ function Button:update(dt, mouse)
 	self.clicked = mouseOverButton and love.mouse.isDown('l')
 end
 
+function Button:onKeyPressed(key, unicode)
+	if not self.active then return end
+
+	if self.keyactions[key] then
+		return self.keyactions[key](self, key, unicode)
+	end
+end
+
 function Button.update_all(dt)
 	local mouse = vector(love.mouse.getPosition())
 	for _,btn in pairs(Button.buttons) do
@@ -101,5 +120,11 @@ end
 function Button.draw_all()
 	for _,btn in pairs(Button.buttons) do
 		btn:draw()
+	end
+end
+
+function Button.handleKeyPressed(key, unicode)
+	for _,btn in pairs(Button.buttons) do
+		if btn:onKeyPressed(key, unicode) then return end
 	end
 end
