@@ -36,7 +36,7 @@ function Input.new(center, size, accept, font)
 			self.nextitem.active = true
 		end
 	end
-	inp.keyactions.enter = inp.keyactions.tab
+	inp.keyactions["return"] = inp.keyactions.tab
 	inp.keyactions.kpenter = inp.keyactions.tab
 
 	inp = setmetatable(inp, Input)
