@@ -44,9 +44,16 @@ function Items.update(dt)
 end
 
 function Items.remove(item)
+	if not item then return end
 	items[item] = nil
 end
 
 function Items.clear()
 	items = {}
+end
+
+function Items.find(pos)
+	for it,p in pairs(items) do
+		if p == pos then return it end
+	end
 end
