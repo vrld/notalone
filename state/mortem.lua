@@ -1,7 +1,13 @@
+--
+-- message to future me:
+-- THIS IS UGLY AS FUCK. I AM SORRY!
+-- THE DEADLINE IS TO BLAME! o_O
+--
 require "net/pipes"
 require "gamestate"
 require "net/protocol"
 require "gui/dialog"
+require "state/score"
 
 Gamestate.mortem = Gamestate.new()
 local st = Gamestate.mortem
@@ -31,12 +37,10 @@ function get_world:draw()
 end
 
 function get_world:update(dt)
-	-- TODO: get exit
 	local status
 	status, world, start = assert(coroutine.resume(self.getworld))
 	if coroutine.status(self.getworld) == "dead" then
-		print(world, #world, start)
-		player.init(start, 20) -- TODO: life and stuff
+		player.init(start, 30) -- TODO: life and stuff
 		level = Level.new(world)
 		level:see(start, 3)
 		camera = Camera.new(player.pixelpos(),1)
@@ -50,7 +54,7 @@ function play:update(dt)
 	player.age = player.age + dt
 
 	local message = getMessage(Mortem.pipe)
-	if message then
+	while message do
 		if message[1] == "tempus" then -- time update
 			player.age = tonumber(message[2])
 			player.lifespan = tonumber(message[3])
@@ -58,11 +62,20 @@ function play:update(dt)
 			player.ondie()
 		elseif message[1] == "signum" then
 			local pos = vector(tonumber(message[2]), tonumber(message[3]))
-			local item = wrapDraw(love.graphics.newImage('images/'..message[4]..'.png'))
+			local img = love.graphics.newImage('images/'..message[4]..'.png')
+			img:setFilter('nearest', 'nearest')
+			local item = wrapDraw(img)
 			Items.add(item, pos)
+		elseif message[1] == "fossa" then
+			level.grid[tonumber(message[2])][tonumber(message[3])] = 1
 		elseif message[1] == "egressus" then
-			print("exit")
+			Gamestate.switch(Gamestate.score, level, tonumber(message[2]), camera)
+			return
+		elseif message[1] == "removeo" then
+			local pos = vector(tonumber(message[2]), tonumber(message[3]))
+			Items.remove(Items.find(pos))
 		end
+		message = getMessage(Mortem.pipe)
 	end
 
 	if keydelay <= 0 then
@@ -96,9 +109,9 @@ function play:draw()
 	camera:predraw()
 	level:draw(camera)
 	level:drawFog(camera)
+	Trails.draw()
 	Items.draw(level.seen)
 	player.draw()
-	Trails.draw()
 	camera:postdraw()
 
 	local barwith = love.graphics.getWidth() - 20
@@ -110,12 +123,20 @@ end
 
 -- parent state
 function st:enter(pre, ip, port)
+	self.ip = ip
+	self.port = port
+	if Mortem.pipe then
+		Mortem.pipe.udp:close()
+	end
 	Mortem.pipe = NetPipe.new(port, ip)
 	love.graphics.setBackgroundColor(0,0,0)
 	substate = connect
 
 	connect.handshake = coroutine.create(Mortem.handshake)
 	get_world.getworld = coroutine.create(Mortem.getworld)
+
+	Items.clear()
+	Trails.clear()
 
 	function player.ondie()
 		level:unsee()

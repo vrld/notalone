@@ -1,3 +1,8 @@
+--
+-- message to future me:
+-- THIS IS UGLY AS FUCK. I AM SORRY!
+-- THE DEADLINE IS TO BLAME! o_O
+--
 require "gamestate"
 require "maze"
 require "items"
@@ -6,8 +11,32 @@ require "net/protocol"
 require "util/camera"
 require "gui/dialog"
 require "AnAL"
+require "state/score"
 
-Inventory = { selected = 1, items = {} }
+local images = {
+	left    = love.graphics.newImage('images/left.png'),
+	right   = love.graphics.newImage('images/right.png'),
+	up      = love.graphics.newImage('images/up.png'),
+	down    = love.graphics.newImage('images/down.png'),
+	deadend = love.graphics.newImage('images/deadend.png'),
+	shovel  = love.graphics.newImage('images/shovel.png'),
+	coin    = love.graphics.newImage('images/coin.png'),
+	crate   = love.graphics.newImage('images/crate.png'),
+}
+for _,i in pairs(images) do
+	i:setFilter('nearest', 'nearest')
+end
+
+local Powerups = {
+	{obj = wrapDraw(images.left),    what = "left"},
+	{obj = wrapDraw(images.right),   what = "right"},
+	{obj = wrapDraw(images.up),      what = "up"},
+	{obj = wrapDraw(images.down),    what = "down"},
+	{obj = wrapDraw(images.deadend), what = "deadend"},
+	{obj = wrapDraw(images.shovel),  what = "shovel"},
+}
+
+local Inventory = { selected = 1, items = {} }
 -- circle selection in specified direction
 function Inventory.select(direction)
 	Inventory.selected = Inventory.selected - direction
@@ -46,10 +75,14 @@ function Inventory.draw()
 	end
 end
 
+function Inventory.getSelected()
+	return Inventory.items[Inventory.selected]
+end
+
 Gamestate.deus = Gamestate.new()
 local st = Gamestate.deus
 
-local substate, world, playerpos, level, pipe, exit
+local substate, world, playerpos, level, pipe, exit, totalFields, walkedFields, coins, crates
 local camera
 
 local wait_for_client = {alpha = 155, t = 0}
@@ -84,6 +117,28 @@ function send_world:update(dt)
 	assert(coroutine.resume(self.sendworld, world, playerpos))
 	if coroutine.status(self.sendworld) == "dead" then
 		level = Level.new(world)
+		-- spawn items at random positions
+		coins, crates = {}, {}
+		for i=1,5 do
+			local x,y
+			repeat
+				x,y = math.random(1,#level.grid[1]), math.random(1,#level.grid)
+			until level.grid[y][x] == 1
+			coins[#coins+1] = vector(x,y)
+			Items.add(wrapDraw(images.coin), vector(x,y))
+			level.grid[y][x] = 3
+			Deus.addSign(x,y, 'coin')
+		end
+		for i=1,5 do
+			local x,y
+			repeat
+				x,y = math.random(1,#level.grid[1]), math.random(1,#level.grid)
+			until level.grid[y][x] == 1
+			crates[#crates+1] = vector(x,y)
+			Items.add(wrapDraw(images.crate), vector(x,y))
+			level.grid[y][x] = 4
+			Deus.addSign(x,y, 'crate')
+		end
 		substate = play
 		selected_pos = vector(math.floor(#world[1]/2), math.floor(#world/2))
 	end
@@ -91,9 +146,26 @@ end
 --
 -- play state
 --
-local time, time_since_last_sync = 0,0
+local time, time_since_last_sync, points = 0,0,0
 local keydelay = 0
 local min, max = math.min, math.max
+
+local function getScore()
+	-- count walked fields
+	local seen = 0
+	for _,s in pairs(walkedFields) do
+		seen = seen + 1
+	end
+	seen = seen / totalFields * 400
+
+	local speed = 150 / time * 100
+	return math.ceil(seen + speed + points)
+end
+
+local function actionMeaningful()
+	return (level.grid[selected_pos.y][selected_pos.x] == 0 and Inventory.getSelected().what == "shovel") or
+		   (level.grid[selected_pos.y][selected_pos.x] ~= 0 and Inventory.getSelected().what ~= "shovel")
+end
 
 function play:update(dt)
 	time = time + dt
@@ -103,9 +175,10 @@ function play:update(dt)
 	player.update(dt)
 
 	if player.pos == exit then
-		Deus.exit()
-		print("EXIT")
-		-- TODO: go to highscores
+		local score = getScore()
+		Deus.exit(score)
+		Gamestate.switch(Gamestate.score, level, score, camera)
+		return
 	end
 
 	if time_since_last_sync > .25 then
@@ -114,9 +187,33 @@ function play:update(dt)
 	end
 
 	local message = getMessage(Deus.pipe)
-	if message and message[1] == "moveo" then
-		player.pos = vector(tonumber(message[2]), tonumber(message[3]))
-		player.trail:add(player.pixelpos())
+	while message do
+		if message[1] == "moveo" then
+			player.pos = vector(tonumber(message[2]), tonumber(message[3]))
+			player.trail:add(player.pixelpos())
+			if not walkedFields[player.pos.y * #level.grid + player.pos.x] then
+				walkedFields[player.pos.y * #level.grid + player.pos.x] = true
+			end
+		end
+		message = getMessage(Deus.pipe)
+	end
+
+	for i,c in ipairs(coins) do
+		if c == player.pos then
+			points = points + math.random(100, 400)
+			Deus.removeItem(c)
+			Items.remove(Items.find(c))
+			table.remove(coins, i)
+		end
+	end
+
+	for i,c in ipairs(crates) do
+		if c == player.pos then
+			Inventory.items[#Inventory.items+1] = Powerups[math.random(#Powerups)]
+			Deus.removeItem(c)
+			Items.remove(Items.find(c))
+			table.remove(crates, i)
+		end
 	end
 
 	Items.update(dt)
@@ -141,10 +238,15 @@ function play:update(dt)
 			Inventory.select(-1)
 		end
 
-		if love.keyboard.isDown('d') and level.grid[selected_pos.y][selected_pos.x] ~= 0 then
-			local item = Inventory.items[Inventory.selected]
-			Items.add(item.obj, selected_pos:clone())
-			Deus.addSign(selected_pos.x, selected_pos.y, item.what)
+		if love.keyboard.isDown('d') and actionMeaningful() then
+			local item = Inventory.getSelected()
+			if item.what == "shovel" then
+				level.grid[selected_pos.y][selected_pos.x] = 1
+				Deus.shovel(selected_pos)
+			else
+				Items.add(item.obj, selected_pos:clone())
+				Deus.addSign(selected_pos.x, selected_pos.y, item.what)
+			end
 			Inventory.remove(Inventory.selected)
 			Inventory.selected = math.min(Inventory.selected, #Inventory.items)
 --			Inventory.select(1)
@@ -159,15 +261,17 @@ end
 function play:draw()
 	camera:predraw()
 	level:draw(camera, true)
-	player.draw()
 	Items.draw()
-	if level.grid[selected_pos.y][selected_pos.x] ~= 0 then
+	Trails.draw()
+	player.draw()
+	if actionMeaningful() then
 		love.graphics.setColor(0,255,100,200)
 	else
 		love.graphics.setColor(255,160,0,100)
 	end
 	love.graphics.rectangle('fill', (selected_pos.x-1)*TILESIZE, (selected_pos.y-1)*TILESIZE, 32,32)
 	camera:postdraw()
+
 	Inventory.draw()
 
 	local barwith = love.graphics.getWidth() - 20
@@ -181,7 +285,11 @@ end
 -- Main gamestate. Forwards to substates
 --
 function st:enter(pre, port, grid, startpos, exitpos)
+	self.port = port
 	Level.init()
+	if Deus.pipe then
+		Deus.pipe.udp:close()
+	end
 	Deus.pipe = NetPipe.new(port)
 	love.graphics.setBackgroundColor(0,0,0)
 	world, playerpos = grid, startpos
@@ -190,28 +298,40 @@ function st:enter(pre, port, grid, startpos, exitpos)
 	wait_for_client.handshake = coroutine.create(Deus.handshake)
 	send_world.sendworld = coroutine.create(Deus.sendworld)
 
+	Trails.clear()
+	Items.clear()
+
 	player.init(startpos, 20)
 	function player.ondie()
 		Deus.killPlayer()
 		player.age = 0
 		player.lifespan = player.lifespan + 5
+		Deus.addSign(player.pos.x, player.pos.y, 'grave')
+		local item = wrapDraw(love.graphics.newImage('images/grave.png'))
+		Items.add(item, player.pos:clone())
+		player.reset()
 	end
 
 	level = Level.new(grid)
 	exit = exitpos
+	local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .1, 0)
+	Items.add(exitanim, exit)
+
 	local levelsize = vector(#grid[1], #grid) * TILESIZE
 	local zoom = math.min(love.graphics.getWidth() / levelsize.x,
 	                      love.graphics.getHeight() / levelsize.y)
 	camera = Camera.new(levelsize/2, zoom)
 
 	Inventory.selected = 1
-	Inventory.items = {
-		{obj = wrapDraw(love.graphics.newImage('images/left.png')),    what = "left"},
-		{obj = wrapDraw(love.graphics.newImage('images/right.png')),   what = "right"},
-		{obj = wrapDraw(love.graphics.newImage('images/up.png')),      what = "up"},
-		{obj = wrapDraw(love.graphics.newImage('images/down.png')),    what = "down"},
-		{obj = wrapDraw(love.graphics.newImage('images/deadend.png')), what = "deadend"},
-	}
+	for i,p in ipairs(Powerups) do
+		Inventory.items[#Inventory.items+1] = p
+	end
+
+	totalFields = 0
+	for y,x in spatialrange(1,#grid, 1,#grid[1]) do
+		if grid[y][x] ~= 0 then totalFields = totalFields + 1 end
+	end
+	walkedFields = {}
 end
 
 function st:draw()
