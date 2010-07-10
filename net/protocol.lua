@@ -230,10 +230,22 @@ function Deus.killPlayer()
 	pipe:send("rumpas\n")
 end
 
-function Deus.exit()
+function Deus.exit(score)
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
-	pipe:send("egressus\n")
+	pipe:send(string.format("egressus:%s\n", score))
+end
+
+function Deus.shovel(pos)
+	local pipe = Deus.pipe
+	assert(pipe, "Give me a pipe, please!")
+	pipe:send(string.format("fossa:%s:%s\n", pos.y, pos.x))
+end
+
+function Deus.removeItem(pos)
+	local pipe = Deus.pipe
+	assert(pipe, "Give me a pipe, please!")
+	pipe:send(string.format("removeo:%s:%s\n", pos.x, pos.y))
 end
 
 function getMessage(pipe)
