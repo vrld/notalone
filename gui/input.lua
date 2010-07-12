@@ -1,6 +1,3 @@
-require "util/vector"
-require "util/color"
-
 Input = {}
 Input.__index      = Input
 Input.bgcolor      = Color.rgb(150,150,150)
@@ -12,7 +9,7 @@ Input.textActive   = Input.bordercolor * 1.5
 Input.fields = {}
 
 local function __NULLFUNCTION__() end
-function Input.new(center, size, accept, font)
+function Input.new(center, size, accept)
 	assert(center, "Input needs a center")
 	assert(size,   "Input needs a size")
 
@@ -22,7 +19,7 @@ function Input.new(center, size, accept, font)
 		textpos = center - vector(0,20),
 		pos     = center - size/2,
 		size    = size,
-		font    = font or love.graphics.getFont(),
+		font    = love.graphics.getFont(),
 		accept  = accept or "[^\n\t]",
 		active  = false,
 		keyactions = {}
@@ -115,6 +112,7 @@ function Input:onKeyPressed(key, unicode)
 end
 
 function Input:centerText()
+	if not self.font then return end
 	local tw, th = self.font:getWidth(self.text), self.font:getHeight(self.text)
 	self.textpos = self.center - vector(tw/2, -10)
 end

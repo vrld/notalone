@@ -1,6 +1,3 @@
-require "util/vector"
-require "util/color"
-
 Button = {}
 Button.__index = Button
 Button.bgcolor       = Color.rgb(150,150,150)
@@ -12,19 +9,19 @@ Button.textHovered   = Button.bordercolor * 1.5
 Button.buttons = {}
 
 local function __NULLFUNCTION__() end
-function Button.new(text, center, size, font, onMouseEnter, onMouseLeave, onClick)
+function Button.new(text, center, size, onMouseEnter, onMouseLeave, onClick)
 	assert(text,   "Buttons need text")
 	assert(center, "Button '"..text.."' needs a center")
 	assert(size,   "Button '"..text.."' needs a size")
 
 	local btn = {text = text, pos = center - size/2, size = size, hovered = false, active = false}
-	btn.font         = font or love.graphics.getFont()
+	btn.font         = love.graphics.getFont()
 	btn.onMouseEnter = onMouseEnter or __NULLFUNCTION__
 	btn.onMouseLeave = onMouseLeave or __NULLFUNCTION__
 	btn.onClick      = onClick      or __NULLFUNCTION__
 
 	btn.keyactions = {}
-	function btn.keyactions.tab(self)
+	btn.keyactions[keys.down] = function(self)
 		if not self.active then return end
 		if self.nextitem then
 			self.active = false
@@ -32,7 +29,7 @@ function Button.new(text, center, size, font, onMouseEnter, onMouseLeave, onClic
 		end
 		return true
 	end
-	btn.keyactions["return"] = function(self) self.onClick() end
+	btn.keyactions[keys.item_left] = function(self) self.onClick() end
 
 	local tw, th = btn.font:getWidth(text), btn.font:getHeight(text)
 	btn.textpos = center - vector(tw/2, -th/2+5)
@@ -57,7 +54,6 @@ function Button.remove_all()
 end
 
 function Button:draw()
-	love.graphics.setFont(self.font)
 	if self.hovered or self.active then
 		Button.bgHovered:set()
 	else

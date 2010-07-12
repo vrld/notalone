@@ -3,16 +3,6 @@
 -- THIS IS UGLY AS FUCK. I AM SORRY!
 -- THE DEADLINE IS TO BLAME! o_O
 --
-require "gamestate"
-require "maze"
-require "items"
-require "net/pipes"
-require "net/protocol"
-require "util/camera"
-require "gui/dialog"
-require "AnAL"
-require "state/score"
-
 local images = {
 	left    = love.graphics.newImage('images/left.png'),
 	right   = love.graphics.newImage('images/right.png'),
@@ -82,7 +72,7 @@ end
 Gamestate.deus = Gamestate.new()
 local st = Gamestate.deus
 
-local substate, world, playerpos, level, pipe, exit, totalFields, walkedFields, coins, crates
+local substate, world, playerpos, level, pipe, exit, totalFields, walkedFields, coins, crates, score
 local camera
 
 local wait_for_client = {alpha = 155, t = 0}
@@ -150,18 +140,6 @@ local time, time_since_last_sync, points = 0,0,0
 local keydelay = 0
 local min, max = math.min, math.max
 
-local function getScore()
-	-- count walked fields
-	local seen = 0
-	for _,s in pairs(walkedFields) do
-		seen = seen + 1
-	end
-	seen = seen / totalFields * 400
-
-	local speed = 150 / time * 100
-	return math.ceil(seen + speed + points)
-end
-
 local function actionMeaningful()
 	return (level.grid[selected_pos.y][selected_pos.x] == 0 and Inventory.getSelected().what == "shovel") or
 		   (level.grid[selected_pos.y][selected_pos.x] ~= 0 and Inventory.getSelected().what ~= "shovel")
@@ -169,13 +147,13 @@ end
 
 function play:update(dt)
 	time = time + dt
+	score = getScore(walkedFields, totalFields, points, time)
 	time_since_last_sync = time_since_last_sync + dt
 
 	player.grow(dt)
 	player.update(dt)
 
 	if player.pos == exit then
-		local score = getScore()
 		Deus.exit(score)
 		Gamestate.switch(Gamestate.score, level, score, camera)
 		return
@@ -218,27 +196,28 @@ function play:update(dt)
 
 	Items.update(dt)
 
+	-- MOVEMENT
 	if keydelay <= 0 then
 		keydelay = .1
 
-		if love.keyboard.isDown("up") then
+		if love.keyboard.isDown(keys.up) then
 			selected_pos.y = max(selected_pos.y - 1, 2)
-		elseif love.keyboard.isDown("down") then
+		elseif love.keyboard.isDown(keys.down) then
 			selected_pos.y = min(selected_pos.y + 1, #world-1)
 		end
-		if love.keyboard.isDown("left") then
+		if love.keyboard.isDown(keys.left) then
 			selected_pos.x = max(selected_pos.x - 1, 2)
-		elseif love.keyboard.isDown("right") then
+		elseif love.keyboard.isDown(keys.right) then
 			selected_pos.x = min(selected_pos.x + 1, #world[1]-1)
 		end
 
-		if love.keyboard.isDown('a') then
+		if love.keyboard.isDown(keys.item_left) then
 			Inventory.select( 1)
-		elseif love.keyboard.isDown('s') then
+		elseif love.keyboard.isDown(keys.item_right) then
 			Inventory.select(-1)
 		end
 
-		if love.keyboard.isDown('d') and actionMeaningful() then
+		if love.keyboard.isDown(keys.item_action) and actionMeaningful() then
 			local item = Inventory.getSelected()
 			if item.what == "shovel" then
 				level.grid[selected_pos.y][selected_pos.x] = 1
@@ -274,17 +253,19 @@ function play:draw()
 
 	Inventory.draw()
 
-	local barwith = love.graphics.getWidth() - 20
+	local barwith = love.graphics.getWidth() - 60
 	love.graphics.setColor(255,255,255,100)
-	love.graphics.rectangle('fill', 10, 10, barwith, 7)
+	love.graphics.rectangle('fill', 50, 10, barwith, 7)
 	love.graphics.setColor(255,255,255)
-	love.graphics.rectangle('fill', 10, 10, (1 - player.age / player.lifespan) * barwith, 7)
+	love.graphics.rectangle('fill', 50, 10, (1 - player.age / player.lifespan) * barwith, 7)
+	love.graphics.print('life:', 10, 19)
 end
 
 --
 -- Main gamestate. Forwards to substates
 --
 function st:enter(pre, port, grid, startpos, exitpos)
+	score = 0
 	self.port = port
 	Level.init()
 	if Deus.pipe then
@@ -317,10 +298,10 @@ function st:enter(pre, port, grid, startpos, exitpos)
 	local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .1, 0)
 	Items.add(exitanim, exit)
 
-	local levelsize = vector(#grid[1], #grid) * TILESIZE
+	local levelsize = vector(#grid[1], #grid + 2) * TILESIZE
 	local zoom = math.min(love.graphics.getWidth() / levelsize.x,
 	                      love.graphics.getHeight() / levelsize.y)
-	camera = Camera.new(levelsize/2, zoom)
+	camera = Camera.new(levelsize/2 - vector(0, TILESIZE * .7), zoom)
 
 	Inventory.selected = 1
 	for i,p in ipairs(Powerups) do

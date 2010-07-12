@@ -1,11 +1,3 @@
-require "util/camera"
-require "player"
-require "level"
-require "gamestate"
-require "items"
-require "state/won"
-require "AnAL"
-
 local level, camera
 Gamestate.play = Gamestate.new()
 local st = Gamestate.play
@@ -22,7 +14,9 @@ function st:enter(pre, grid, pos, exit, life)
 	level:see(pos, 3)
 --	love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
 
+	local diesound = love.sound.newSoundData('sound/maze_1_02.ogg')
 	function player.ondie()
+		playsound(diesound)
 		player.lifespan = player.lifespan + 5
 		level:unsee()
 		player.reset()
@@ -91,11 +85,7 @@ function st:update(dt)
 end
 
 function st:keyreleased(key)
-	if key == 'p' then
-		self.paused = not self.paused
-	elseif key == 'm' then
-		self.show_map = not self.show_map
-	elseif key == 'escape' then
+	if key == keys.start then
 		Gamestate.switch(Gamestate.title)
 	end
 end

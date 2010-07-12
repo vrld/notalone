@@ -22,8 +22,20 @@ function Gamestate.switch(to, ...)
 	Gamestate.current:enter(pre, ...)
 end
 
+-- TODO: remove this from here!
+sounds = {}
+function playsound(sound)
+	local s = love.audio.newSource(sound)
+	love.audio.play(s)
+	sounds[s] = s
+end
 function love.update(dt)
 	Gamestate.current:update(dt)
+	for k,s in pairs(sounds) do
+		if s:isStopped() then
+			sounds[k] = nil
+		end
+	end
 end
 
 function love.keypressed(key, unicode)
@@ -44,6 +56,4 @@ end
 
 function love.draw()
 	Gamestate.current:draw()
-	love.graphics.setColor(255,255,255)
-	love.graphics.print(string.format('FPS: %d', love.timer.getFPS()), 10,10)
 end

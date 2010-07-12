@@ -1,7 +1,3 @@
-require "util/camera"
-require "level"
-require "gamestate"
-
 local level, camera, center, sc
 local fadetime, time = 20, 0
 local str
@@ -64,9 +60,9 @@ function st:update(dt)
 end
 
 function st:keyreleased(key)
-	if key == 'escape' then
+	if key == keys.start then
 		Gamestate.switch(Gamestate.title)
-	elseif key == 'return' then
+	elseif key == keys.item_right or key == keys.item_left or key == keys.item_action then
 		next_level()
 	end
 end

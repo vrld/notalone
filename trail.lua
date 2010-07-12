@@ -1,5 +1,3 @@
-require "util/vector"
-
 local trail = {}
 trail.__index = trail
 

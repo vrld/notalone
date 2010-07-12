@@ -3,12 +3,6 @@
 -- THIS IS UGLY AS FUCK. I AM SORRY!
 -- THE DEADLINE IS TO BLAME! o_O
 --
-require "net/pipes"
-require "gamestate"
-require "net/protocol"
-require "gui/dialog"
-require "state/score"
-
 Gamestate.mortem = Gamestate.new()
 local st = Gamestate.mortem
 
@@ -78,17 +72,18 @@ function play:update(dt)
 		message = getMessage(Mortem.pipe)
 	end
 
+	-- INPUT
 	if keydelay <= 0 then
 		keydelay = .15
 
-		if love.keyboard.isDown('up') then
+		if love.keyboard.isDown(keys.up) then
 			player.onmove(player.pos, vector(0,-1))
-		elseif love.keyboard.isDown('down') then
+		elseif love.keyboard.isDown(keys.down) then
 			player.onmove(player.pos, vector(0, 1))
 		end
-		if love.keyboard.isDown('left') then
+		if love.keyboard.isDown(keys.left) then
 			player.onmove(player.pos, vector(-1,0))
-		elseif love.keyboard.isDown('right') then
+		elseif love.keyboard.isDown(keys.right) then
 			player.onmove(player.pos, vector( 1,0))
 		end
 
@@ -114,11 +109,12 @@ function play:draw()
 	player.draw()
 	camera:postdraw()
 
-	local barwith = love.graphics.getWidth() - 20
+	local barwith = love.graphics.getWidth() - 60
 	love.graphics.setColor(255,255,255,100)
-	love.graphics.rectangle('fill', 10, 10, barwith, 7)
+	love.graphics.rectangle('fill', 50, 10, barwith, 7)
 	love.graphics.setColor(255,255,255)
-	love.graphics.rectangle('fill', 10, 10, (1 - player.age/player.lifespan)*barwith, 7)
+	love.graphics.rectangle('fill', 50, 10, (1 - player.age / player.lifespan) * barwith, 7)
+	love.graphics.print('life:', 10, 19)
 end
 
 -- parent state
@@ -138,7 +134,9 @@ function st:enter(pre, ip, port)
 	Items.clear()
 	Trails.clear()
 
+	local diesound = love.sound.newSoundData('sound/maze_1_02.ogg')
 	function player.ondie()
+		playsound(diesound)
 		level:unsee()
 		player.reset()
 		level:see(player.pos,1)

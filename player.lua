@@ -1,6 +1,3 @@
-require "util/vector"
-require "trail"
-
 player = {
 	age         = 0,
 	lifespan    = 30,

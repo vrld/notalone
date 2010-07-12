@@ -1,6 +1,3 @@
-require "gui/button"
-require "util/color"
-
 Dialog = {}
 Dialog.__index = Dialog
 

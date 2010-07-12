@@ -1,5 +1,3 @@
-require "util/tileset"
-
 Level = {tiles = {}}
 Level.__index = Level
 
