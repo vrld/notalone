@@ -121,11 +121,11 @@ function st:enter()
 	btnMortem.nextitem = btnAlone
 	Button.add(btnAlone, btnDeus, btnMortem)
 
-	if not source then
-		source = love.audio.newSource('sound/MAZE.mp3', 'stream')
-		source:setLooping(true)
-		love.audio.play(source)
+	if not music_loop then
+		music_loop = love.audio.newSource('sound/startscreen.ogg', 'stream')
+		music_loop:setLooping(true)
 	end
+	love.audio.play(music_loop)
 end
 
 function st:leave()

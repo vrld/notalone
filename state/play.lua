@@ -14,7 +14,7 @@ function st:enter(pre, grid, pos, exit, life)
 	level:see(pos, 3)
 --	love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
 
-	local diesound = love.sound.newSoundData('sound/maze_1_02.ogg')
+	local diesound = love.sound.newSoundData('sound/die.ogg')
 	function player.ondie()
 		playsound(diesound)
 		player.lifespan = player.lifespan + 5
@@ -37,6 +37,14 @@ function st:enter(pre, grid, pos, exit, life)
 	Items.clear()
 	local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .1, 0)
 	Items.add(exitanim, exit)
+
+	love.audio.stop()
+	ingame_playlist:shuffle()
+	ingame_playlist:play()
+end
+
+function st:leave()
+	ingame_playlist:stop()
 end
 
 function st:draw()
@@ -44,8 +52,8 @@ function st:draw()
 	level:draw(camera)
 	level:drawFog(camera)
 	Items.draw(level.seen)
-	player.draw()
 	Trails.draw()
+	player.draw()
 	camera:postdraw()
 
 	local frac = 1 - player.age / player.lifespan
@@ -65,6 +73,7 @@ function st:draw()
 end
 
 function st:update(dt)
+	ingame_playlist:update(dt)
 	if self.paused then return end
 
 	local min,max = level.seen.min, level.seen.max

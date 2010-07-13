@@ -66,6 +66,9 @@ function Inventory.draw()
 end
 
 function Inventory.getSelected()
+	if not Inventory.items[Inventory.selected] then
+		Inventory.selected = 1
+	end
 	return Inventory.items[Inventory.selected]
 end
 
@@ -82,14 +85,18 @@ local selected_pos = vector(0,0)
 --
 -- handshake state
 --
+local sequence = Sequence(scenes.highscores, scenes.credits, scenes.title)
+local time = 0
+sequence.looping = true
 function wait_for_client:draw()
-	love.graphics.setColor(255,255,255,self.alpha)
-	love.graphics.print("Waiting for mortem",100,100)
+	sequence:draw()
+	love.graphics.setColor(255,255,255,150 + math.sin(time) * 50)
+	love.graphics.print('waiting for other player', (800 - 311) / 2, 580)
 end
 
 function wait_for_client:update(dt)
-	self.t = self.t + dt
-	self.alpha = 155 + math.sin(self.t) * 100
+	time = time + dt
+	sequence:update(dt)
 	assert(coroutine.resume(self.handshake, Deus.pipe))
 	if coroutine.status(self.handshake) == "dead" then
 		substate = send_world
@@ -99,12 +106,13 @@ end
 -- world sending state
 --
 function send_world:draw()
-	love.graphics.setColor(255,255,255)
-	love.graphics.print(string.format("Sending world..."),100,100)
+	sequence:draw()
+	love.graphics.print('sending world', (800 - 172) / 2, 580)
 end
 
 function send_world:update(dt)
-	assert(coroutine.resume(self.sendworld, world, playerpos))
+	sequence:update(dt)
+	assert(coroutine.resume(self.sendworld, world, playerpos, exit))
 	if coroutine.status(self.sendworld) == "dead" then
 		level = Level.new(world)
 		-- spawn items at random positions
@@ -131,6 +139,12 @@ function send_world:update(dt)
 		end
 		substate = play
 		selected_pos = vector(math.floor(#world[1]/2), math.floor(#world/2))
+
+		love.graphics.setFont(love.graphics.newFont('fonts/arena_berlin_redux.ttf', 30))
+
+		love.audio.stop()
+		ingame_playlist:shuffle()
+		ingame_playlist:play()
 	end
 end
 --
@@ -146,6 +160,7 @@ local function actionMeaningful()
 end
 
 function play:update(dt)
+	ingame_playlist:update(dt)
 	time = time + dt
 	score = getScore(walkedFields, totalFields, points, time)
 	time_since_last_sync = time_since_last_sync + dt
@@ -167,7 +182,11 @@ function play:update(dt)
 	local message = getMessage(Deus.pipe)
 	while message do
 		if message[1] == "moveo" then
-			player.pos = vector(tonumber(message[2]), tonumber(message[3]))
+			local newpos = vector(tonumber(message[2]), tonumber(message[3]))
+			local dir = newpos - player.pos
+			player.move(dir)
+			player.pos = newpos
+
 			player.trail:add(player.pixelpos())
 			if not walkedFields[player.pos.y * #level.grid + player.pos.x] then
 				walkedFields[player.pos.y * #level.grid + player.pos.x] = true
@@ -253,17 +272,18 @@ function play:draw()
 
 	Inventory.draw()
 
-	local barwith = love.graphics.getWidth() - 60
+	local barwith = love.graphics.getWidth() - 80
 	love.graphics.setColor(255,255,255,100)
-	love.graphics.rectangle('fill', 50, 10, barwith, 7)
+	love.graphics.rectangle('fill', 70, 10, barwith, 7)
 	love.graphics.setColor(255,255,255)
-	love.graphics.rectangle('fill', 50, 10, (1 - player.age / player.lifespan) * barwith, 7)
-	love.graphics.print('life:', 10, 19)
+	love.graphics.rectangle('fill', 70, 10, (1 - player.age / player.lifespan) * barwith, 7)
+	love.graphics.print('life:', 10, 20)
 end
 
 --
 -- Main gamestate. Forwards to substates
 --
+local font
 function st:enter(pre, port, grid, startpos, exitpos)
 	score = 0
 	self.port = port
@@ -295,7 +315,7 @@ function st:enter(pre, port, grid, startpos, exitpos)
 
 	level = Level.new(grid)
 	exit = exitpos
-	local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .1, 0)
+	local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .15, 0)
 	Items.add(exitanim, exit)
 
 	local levelsize = vector(#grid[1], #grid + 2) * TILESIZE
@@ -313,6 +333,12 @@ function st:enter(pre, port, grid, startpos, exitpos)
 		if grid[y][x] ~= 0 then totalFields = totalFields + 1 end
 	end
 	walkedFields = {}
+
+	if not font then
+		font = love.graphics.newFont('fonts/arena_berlin_redux.ttf', 30)
+	end
+	oldfont = love.graphics.getFont()
+	love.graphics.setFont(font)
 end
 
 function st:draw()
@@ -336,4 +362,9 @@ function st:keypressed(key,unicode)
 	if substate.keypressed then
 		substate:keypressed(key,unicode)
 	end
+end
+
+function st:leave()
+	love.graphics.setFont(oldfont)
+	ingame_playlist:stop()
 end

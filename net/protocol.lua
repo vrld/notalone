@@ -74,7 +74,7 @@ function Mortem.handshake(dt)
 	end
 end
 
-function Deus.sendworld(world, start)
+function Deus.sendworld(world, start, exit)
 	local pipe = Deus.pipe
 	assert(pipe, "Give me a pipe, please!")
 
@@ -120,6 +120,17 @@ function Deus.sendworld(world, start)
 
 	-- world sent, send starting position
 	pipe:send(string.format("On the next day, I made you:%s:%s\n", start.x, start.y))
+	params = pipe:gettext():split(":")
+	if params[1] == "Amen" and (tonumber(params[2]) ~= start.x or tonumber(params[3]) ~= start.y) then
+		pipe:send("ERROR: wrong position\n")
+		error("Wrong position: " .. params[2] .. ", " .. params[3])
+	elseif params[1] ~= "Amen" then
+		pipe:send("ERROR: cannot understand your gibberish\n")
+		error("Protocol error: strange reply when receiving starting position confirmation:\n'"..table.concat(params,":").."'")
+	end
+	pipe:send("Amen\n")
+
+	pipe:send(string.format("Go there:%s:%s\n", exit.x, exit.y))
 	params = pipe:gettext():split(":")
 	if params[1] == "Amen" and (tonumber(params[2]) ~= start.x or tonumber(params[3]) ~= start.y) then
 		pipe:send("ERROR: wrong position\n")
@@ -196,8 +207,16 @@ function Mortem.getworld()
 	pipe:send(string.format("Amen:%s:%s\n", start.x, start.y))
 
 	text = pipe:gettext()
+	if text ~= "Amen" then
+		error("Protocol error: " .. text)
+	end
+
+	params = pipe:gettext():split(":")
+	local exit = vector(tonumber(params[2]), tonumber(params[3]))
+	pipe:send(string.format("Amen:%s:%s\n", start.x, start.y))
+
 	if text == "Amen" then
-		return world, start
+		return world, start, exit
 	end
 
 	error("Protocol error: strange reply when receiving starting position: \n'"..table.concat(params,":").."'")

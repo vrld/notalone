@@ -58,7 +58,7 @@ function st:enter(pre, lvl, scre, cam)
 	camera = cam
 	level.seen = level.seen_accum
 
-	oldfont, font = love.graphics.getFont(), love.graphics.newFont('fonts/digital-7.ttf', 35)
+	oldfont, font = love.graphics.getFont(), love.graphics.newFont('fonts/arena_berlin_redux.ttf', 35)
 	love.graphics.setFont(font)
 
 	score = scre
@@ -75,6 +75,7 @@ function st:enter(pre, lvl, scre, cam)
 		score_width, score_height = font:getWidth(self.score), font:getHeight(self.score)
 	end
 
+	love.audio.play(music_loop)
 end
 
 function st:leave()
@@ -108,22 +109,24 @@ function st:draw()
 			love.graphics.print('_', (800 - w - 3 * w2) / 2 + w + (pos-1) * w2, ypos + 1.7 * score_height)
 		end
 	end
+	love.graphics.setColor(255,255,255, fade * 180)
 	local w = font:getWidth('HIGHSCORES')
 	love.graphics.print('HIGHSCORES', (800 - w)/2, ypos + 3 * score_height)
+	love.graphics.setColor(255,255,255, fade * 255)
 	for i,s in ipairs(highscores) do
-		love.graphics.print(s.name, (800 - w)/2, ypos + (3+i) * score_height)
-		love.graphics.print(s.score, (800 - w + 200)/2, ypos + (3+i) * score_height)
+		love.graphics.print(s.name, (800 - w)/2, ypos + (3.2+i) * score_height)
+		love.graphics.print(s.score, (800 - w + 200)/2, ypos + (3.2+i) * score_height)
 	end
 end
 
 local keydelay = 0
 local nextchar = {
-	A = 'B', B = 'C', C = 'D', D = 'E', E = 'F', F = 'G', G = 'H', H = ' I', [' I'] = 'J', J = 'K',
+	A = 'B', B = 'C', C = 'D', D = 'E', E = 'F', F = 'G', G = 'H', H = 'I', ['I'] = 'J', J = 'K',
 	K = 'L', L = 'M', M = 'N', N = 'O', O = 'P', P = 'Q', Q = 'R', R = 'S', S = 'T', T = 'U',
 	U = 'V', V = 'W', W = 'X', X = 'Y', Y = 'Z', Z = 'A'
 }
 local prevchar = {
-	A = 'Z', B = 'A', C = 'B', D = 'C', E = 'D', F = 'E', G = 'F', H = 'G', [' I'] = 'H', J = ' I',
+	A = 'Z', B = 'A', C = 'B', D = 'C', E = 'D', F = 'E', G = 'F', H = 'G', ['I'] = 'H', J = 'I',
 	K = 'J', L = 'K', M = 'L', N = 'M', O = 'N', P = 'O', Q = 'P', R = 'Q', S = 'R', T = 'S',
 	U = 'T', V = 'U', W = 'V', X = 'W', Y = 'X', Z = 'Y'
 }

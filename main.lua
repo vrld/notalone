@@ -3,8 +3,11 @@ require "gamestate"
 
 require "util/camera"
 require "util/color"
+require "util/playlist"
+require "util/sequence"
 require "util/tileset"
 require "util/vector"
+require "scenes"
 
 require "gui/button"
 require "gui/dialog"
@@ -22,11 +25,14 @@ require "items"
 require "level"
 require "player"
 
+ingame_playlist = Playlist('sound/maze1.ogg', 'sound/maze2.ogg', 'sound/maze3.ogg')
+require "state/title_deus"
+require "state/title_mortem"
+require "state/title"
 require "state/deus"
 require "state/mortem"
-require "state/play"
 require "state/score"
-require "state/title"
+require "state/play"
 require "state/won"
 
 --require "profiler"
@@ -47,6 +53,8 @@ function love.load()
 	--profiler.start()
 	Level.init()
 	love.graphics.setLine(3)
-	love.graphics.setFont(love.graphics.newFont('fonts/digital-7.ttf', 20))
+	love.graphics.setFont(love.graphics.newFont('fonts/arena_berlin_redux.ttf', 35))
 	Gamestate.switch(Gamestate.title)
+	--Gamestate.switch(Gamestate.title_mortem)
+	--Gamestate.switch(Gamestate.title_deus)
 end

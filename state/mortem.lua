@@ -11,14 +11,18 @@ local substate, world, camera, level
 local connect = {alpha = 155, t = 0}
 local get_world = {}
 local play = {}
+local sequence = Sequence(scenes.highscores, scenes.credits, scenes.title)
+local time = 0
+local font
 function connect:draw()
-	love.graphics.setColor(255,255,255,self.alpha)
-	love.graphics.print("Connecting to server",100,100)
+	sequence:draw()
+	love.graphics.setColor(255,255,255,150 + math.sin(time) * 50)
+	love.graphics.print('waiting for other player', (800 - 311) / 2, 580)
 end
 
 function connect:update(dt)
-	self.t = self.t + dt
-	self.alpha = 155 + math.sin(self.t) * 100
+	time = time + dt
+	sequence:update(dt)
 	assert(coroutine.resume(self.handshake, dt))
 	if coroutine.status(self.handshake) == "dead" then
 		substate = get_world
@@ -26,26 +30,36 @@ function connect:update(dt)
 end
 
 function get_world:draw()
+	sequence:draw()
 	love.graphics.setColor(255,255,255)
-	love.graphics.print(string.format("Getting world..."),100,100)
+	love.graphics.print('getting world', (800 - 172) / 2, 580)
 end
 
 function get_world:update(dt)
+	sequence:update(dt)
 	local status
-	status, world, start = assert(coroutine.resume(self.getworld))
+	status, world, start,exit = assert(coroutine.resume(self.getworld))
 	if coroutine.status(self.getworld) == "dead" then
+		local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .15, 0)
+		Items.add(exitanim, exit)
 		player.init(start, 30) -- TODO: life and stuff
 		level = Level.new(world)
 		level:see(start, 3)
 		camera = Camera.new(player.pixelpos(),1)
 		substate = play
+		love.audio.stop()
+		ingame_playlist:shuffle()
+		ingame_playlist:play()
+		love.graphics.setFont(love.graphics.newFont('fonts/arena_berlin_redux.ttf', 30))
 	end
 end
 
 -- play state
 local keydelay, time = 0,1
 function play:update(dt)
+	ingame_playlist:update(dt)
 	player.age = player.age + dt
+	Items.update(dt)
 
 	local message = getMessage(Mortem.pipe)
 	while message do
@@ -73,23 +87,7 @@ function play:update(dt)
 	end
 
 	-- INPUT
-	if keydelay <= 0 then
-		keydelay = .15
-
-		if love.keyboard.isDown(keys.up) then
-			player.onmove(player.pos, vector(0,-1))
-		elseif love.keyboard.isDown(keys.down) then
-			player.onmove(player.pos, vector(0, 1))
-		end
-		if love.keyboard.isDown(keys.left) then
-			player.onmove(player.pos, vector(-1,0))
-		elseif love.keyboard.isDown(keys.right) then
-			player.onmove(player.pos, vector( 1,0))
-		end
-
-	else
-		keydelay = keydelay - dt
-	end
+	player.update(dt)
 
 	-- update camera zoom
 	local min,max = level.seen.min, level.seen.max
@@ -109,11 +107,11 @@ function play:draw()
 	player.draw()
 	camera:postdraw()
 
-	local barwith = love.graphics.getWidth() - 60
+	local barwith = love.graphics.getWidth() - 80
 	love.graphics.setColor(255,255,255,100)
-	love.graphics.rectangle('fill', 50, 10, barwith, 7)
+	love.graphics.rectangle('fill', 70, 10, barwith, 7)
 	love.graphics.setColor(255,255,255)
-	love.graphics.rectangle('fill', 50, 10, (1 - player.age / player.lifespan) * barwith, 7)
+	love.graphics.rectangle('fill', 70, 10, (1 - player.age / player.lifespan) * barwith, 7)
 	love.graphics.print('life:', 10, 19)
 end
 
@@ -134,7 +132,7 @@ function st:enter(pre, ip, port)
 	Items.clear()
 	Trails.clear()
 
-	local diesound = love.sound.newSoundData('sound/maze_1_02.ogg')
+	local diesound = love.sound.newSoundData('sound/die.ogg')
 	function player.ondie()
 		playsound(diesound)
 		level:unsee()
@@ -154,6 +152,17 @@ function st:enter(pre, ip, port)
 		level:see(newpos)
 		Mortem.move(newpos:unpack())
 	end
+
+	if not font then
+		font = love.graphics.newFont('fonts/arena_berlin_redux.ttf', 30)
+	end
+	oldfont = love.graphics.getFont()
+	love.graphics.setFont(font)
+end
+
+function st:leave()
+	love.graphics.setFont(oldfont)
+	ingame_playlist:stop()
 end
 
 function st:draw()
