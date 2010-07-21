@@ -8,13 +8,20 @@ function st:enter()
 		music_loop:setLooping(true)
 	end
 	love.audio.stop()
-	love.audio.play(music_loop)
+	if music_loop:isStopped() then
+		love.audio.play(music_loop)
+	end
 end
 
 -- image scroller and stuff
 local sequence = Sequence(scenes.title, scenes.highscores, scenes.credits)
 function st:update(dt)
 	sequence:update(dt)
+	if music_loop:isStopped() then -- hack to 'solve' the no music problem
+		music_loop = love.audio.newSource('sound/startscreen.ogg', 'stream')
+		music_loop:setLooping(true)
+		love.audio.play(music_loop)
+	end
 end
 
 function st:draw()
@@ -22,6 +29,8 @@ function st:draw()
 	sequence:draw()
 	love.graphics.setColor(255,255,255)
 	love.graphics.print("PRESS 1", (800 - font:getWidth("PRESS 1")) / 2, 550)
+	love.graphics.setColor(255,255,255,150)
+	love.graphics.print("AND BE A GOD", (800 - font:getWidth("AND BE A GOD")) / 2, 580)
 end
 
 function st:keypressed(key, unicode)

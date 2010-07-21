@@ -43,7 +43,7 @@ function scenes.highscores:draw()
 	local score_height = 30
 	local ypos = 70
 	local frac = self.time / self.length
-	local font = love.graphics.getFont()
+	local font = fonts[35]
 	love.graphics.setColor(255,255,255, 180)
 	local w = font:getWidth('HIGHSCORES')
 	love.graphics.print('HIGHSCORES', (820 - w)/2 - 40 * frac, ypos + 3 * 20)
@@ -58,14 +58,9 @@ function scenes.highscores:draw()
 	end
 end
 
-local oldfont, font
 function scenes.highscores:enter()
-	self.scores = load_highscores('scores.mortem')
-	if not font then
-		font = love.graphics.newFont('fonts/arena_berlin_redux.ttf', 35)
-	end
-	oldfont = love.graphics.getFont()
-	love.graphics.setFont(font)
+	self.scores = load_highscores('highscores')
+	love.graphics.setFont(fonts[35])
 end
 
 function scenes.highscores:leave()

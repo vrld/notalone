@@ -1,4 +1,4 @@
-local level, camera, center, sc, before, oldfont, font, score_width, score_height, name, pos, score
+local level, camera, center, sc, before, score_width, score_height, name, pos, score
 local fadetime, time = 10, 0
 
 function load_highscores(fn)
@@ -58,17 +58,15 @@ function st:enter(pre, lvl, scre, cam)
 	camera = cam
 	level.seen = level.seen_accum
 
-	oldfont, font = love.graphics.getFont(), love.graphics.newFont('fonts/arena_berlin_redux.ttf', 35)
-	love.graphics.setFont(font)
+	local font = fonts[35]
+	love.graphics.setFont(fonts[35])
 
 	score = scre
 	self.score = string.format('SCORE: %s', score)
 	score_width, score_height = font:getWidth(self.score), font:getHeight(self.score)
 	name, pos = 'AAAA', 1
 
-	local fn
-	if pre == Gamestate.deus then fn = 'scores.deus' else fn = 'scores.mortem' end
-	highscores = load_highscores(fn)
+	highscores = load_highscores('highscores')
 	if highscores[#highscores].score < score then
 		new_highscore = true
 		self.score = string.format('score: %s - new highscore!', score)
@@ -79,9 +77,7 @@ function st:enter(pre, lvl, scre, cam)
 end
 
 function st:leave()
-	local fn = pre == Gamestate.deus and 'scores.deus' or 'scores.mortem'
-	save_highscores(highscores, fn)
-	love.graphics.setFont(oldfont)
+	save_highscores(highscores, 'highscores')
 end
 
 function st:draw()
@@ -98,6 +94,7 @@ function st:draw()
 	love.graphics.setColor(0,0,0,fade * 255)
 	love.graphics.rectangle('fill', 0,0, 800,600)
 
+	local font = fonts[35]
 	local ypos = 70
 	love.graphics.setColor(255,255,255, fade * 255)
 	love.graphics.print(self.score, (800 - score_width)/2, ypos)
@@ -108,6 +105,9 @@ function st:draw()
 		if pos <= 4 then
 			love.graphics.print('_', (800 - w - 3 * w2) / 2 + w + (pos-1) * w2, ypos + 1.7 * score_height)
 		end
+	else
+		love.graphics.setColor(255,255,255,150 * fade)
+		love.graphics.print("PRESS 1", (800 - font:getWidth("PRESS 1")) / 2, ypos + 1.5 * score_height)
 	end
 	love.graphics.setColor(255,255,255, fade * 180)
 	local w = font:getWidth('HIGHSCORES')
@@ -132,9 +132,6 @@ local prevchar = {
 }
 function st:update(dt)
 	time = time + dt
-	if time > fadetime then
-		time = fadetime
-	end
 
 	if keydelay <= 0 then
 		keydelay = .1
@@ -150,24 +147,20 @@ function st:update(dt)
 		end
 		if love.keyboard.isDown(keys.left) and pos > 1 then
 			pos = pos - 1
-		elseif love.keyboard.isDown(keys.right) and pos < 4 then
+		elseif (love.keyboard.isDown(keys.right) or love.keyboard.isDown(keys.item_left) or love.keyboard.isDown(keys.right)) and pos < 4 then
 			pos = pos + 1
 		end
 
-		if love.keyboard.isDown(keys.item_left) or love.keyboard.isDown(keys.item_right) or love.keyboard.isDown(keys.item_action) then
+		if love.keyboard.isDown(keys.start) or love.keyboard.isDown(keys.item_action) or (pos >= 4 and (love.keyboard.isDown(keys.item_left) or love.keyboard.isDown(keys.item_right))) then
 			if new_highscore then
 				keydelay = .5
 				highscores[#highscores] = {name = name, score = score}
-				local fn = pre == Gamestate.deus and 'scores.deus' or 'scores.mortem'
 				sort_highscores(highscores)
-				save_highscores(highscores, fn)
+				save_highscores(highscores, 'highscores')
 				new_highscore = false
+				time = fadetime
 			else
-				if before == Gamestate.deus then
-					Gamestate.switch(before, before.port, Maze.new(40,30))
-				else
-					Gamestate.switch(before, before.ip, before.port)
-				end
+				Gamestate.switch(Gamestate.title)
 			end
 		end
 
@@ -177,10 +170,15 @@ function st:update(dt)
 
 	camera.pos = camera.pos - (camera.pos - center) * dt
 	camera.zoom = camera.zoom - (camera.zoom - sc) * dt
-end
 
-function st:keyreleased(key)
-	if key == keys.start then
-		Gamestate.switch(Gamestate.title)
+	if music_loop:isStopped() then
+		music_loop = love.audio.newSource('sound/startscreen.ogg', 'stream')
+		music_loop:setLooping(true)
+		love.audio.play(music_loop)
 	end
+
+	if not new_highscore and time - fadetime > 10 then
+		Gamestate.switch(Gamestate.title_mortem)
+	end
+
 end

@@ -1,42 +1,3 @@
-require "keys"
-require "gamestate"
-
-require "util/camera"
-require "util/color"
-require "util/playlist"
-require "util/sequence"
-require "util/tileset"
-require "util/vector"
-require "scenes"
-
-require "gui/button"
-require "gui/dialog"
-require "gui/input"
-
-require "maze"
-require "scores"
-require "trail"
-
-require "net/pipes"
-require "net/protocol"
-
-require "AnAL"
-require "items"
-require "level"
-require "player"
-
-ingame_playlist = Playlist('sound/maze1.ogg', 'sound/maze2.ogg', 'sound/maze3.ogg')
-require "state/title_deus"
-require "state/title_mortem"
-require "state/title"
-require "state/deus"
-require "state/mortem"
-require "state/score"
-require "state/play"
-require "state/won"
-
---require "profiler"
-
 TILESIZE = 32
 
 function spatialrange(a1,a2,b1,b2)
@@ -49,12 +10,72 @@ function spatialrange(a1,a2,b1,b2)
 	end
 end
 
+sounds = {}
+function playsound(sound)
+	local s = love.audio.newSource(sound)
+	love.audio.play(s)
+	sounds[s] = s
+end
+
+fonts = {}
+
+require "keys"
+require "gamestate"
+
+require "util/camera"
+require "util/color"
+require "util/playlist"
+ingame_playlist = Playlist('sound/maze1.ogg', 'sound/maze2.ogg', 'sound/maze3.ogg')
+require "util/sequence"
+require "util/tileset"
+require "util/vector"
+require "scenes"
+
+require "net/pipes"
+require "net/protocol"
+
+require "gui/button"
+require "gui/dialog"
+require "gui/input"
+
+require "maze"
+require "scores"
+require "trail"
+
+require "AnAL"
+require "items"
+require "level"
+require "player"
+
+require "state/title"
+require "state/play"
+require "state/won"
+require "state/deus"
+require "state/mortem"
+require "state/score"
+
 function love.load()
-	--profiler.start()
+	Gamestate.registerEvents()
 	Level.init()
 	love.graphics.setLine(3)
-	love.graphics.setFont(love.graphics.newFont('fonts/arena_berlin_redux.ttf', 35))
+	fonts[30] = love.graphics.newFont('fonts/arena_berlin_redux.ttf', 30)
+	fonts[35] = love.graphics.newFont('fonts/arena_berlin_redux.ttf', 35)
+	love.graphics.setFont(fonts[30])
 	Gamestate.switch(Gamestate.title)
-	--Gamestate.switch(Gamestate.title_mortem)
-	--Gamestate.switch(Gamestate.title_deus)
+end
+
+function love.update(dt)
+	for k,s in pairs(sounds) do
+		if s:isStopped() then
+			sounds[k] = nil
+		end
+	end
+end
+
+function love.keyreleased(key)
+	if key == "q" then
+		love.event.push('q')
+	elseif key == "escape" then
+		Gamestate.switch(Gamestate.title)
+	end
 end

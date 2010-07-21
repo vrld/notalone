@@ -22,38 +22,45 @@ function Gamestate.switch(to, ...)
 	Gamestate.current:enter(pre, ...)
 end
 
--- TODO: remove this from here!
-sounds = {}
-function playsound(sound)
-	local s = love.audio.newSource(sound)
-	love.audio.play(s)
-	sounds[s] = s
-end
-function love.update(dt)
+local _update
+function Gamestate.update(dt)
+	if _update then _update(dt) end
 	Gamestate.current:update(dt)
-	for k,s in pairs(sounds) do
-		if s:isStopped() then
-			sounds[k] = nil
-		end
-	end
 end
 
-function love.keypressed(key, unicode)
+local _keypressed
+function Gamestate.keypressed(key, unicode)
+	if _keypressed then _keyreleased(key) end
 	Gamestate.current:keypressed(key, unicode)
 end
 
-function love.keyreleased(key)
-	if key == "q" then
-		love.event.push('q')
---		profiler.stop()
-	end
+local _keyreleased
+function Gamestate.keyreleased(key)
+	if _keyreleased then _keyreleased(key) end
 	Gamestate.current:keyreleased(key)
 end
 
-function love.mousereleased(x,y,btn)
+local _mousereleased
+function Gamestate.mousereleased(x,y,btn)
+	if _mousereleased then _mousereleased(x,y,btn) end
 	Gamestate.current:mousereleased(x,y,btn)
 end
 
-function love.draw()
+local _draw
+function Gamestate.draw()
+	if _draw then _draw() end
 	Gamestate.current:draw()
+end
+
+function Gamestate.registerEvents()
+	_update            = love.update
+	love.update        = Gamestate.update
+	_keypressed        = love.keypressed
+	love.keypressed    = Gamestate.keypressed
+	_keyreleased       = love.keyreleased
+	love.keyreleased   = Gamestate.keyreleased
+	_mousereleased     = love.mousereleased
+	love.mousereleased = Gamestate.mousereleased
+	_draw              = love.draw
+	love.draw          = Gamestate.draw
 end

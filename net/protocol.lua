@@ -270,3 +270,7 @@ function getMessage(pipe)
 	if not text then return end
 	return text:split(":")
 end
+
+function send_ping(pipe)
+	pipe:send("ping\n")
+end

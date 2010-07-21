@@ -108,7 +108,7 @@ function st:enter()
 	if not dlgDeus then makeDialogDeus() end
 	if not dlgMortem then makeDialogMortem() end
 	if not btnAlone then
-		btnAlone = Button.new("Yes, I Am Alone", vector(400,350), vector(400,40))
+		btnAlone = Button.new("Atheist version", vector(400,350), vector(400,40))
 		btnAlone.onClick = function()
 			local grid,start,exit = Maze.new(20,15)
 			Gamestate.switch(Gamestate.play, grid, start, exit, 20)

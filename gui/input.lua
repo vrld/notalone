@@ -79,7 +79,7 @@ function Input:draw()
 	end
 
 	if self.active and self.text:len() > 0 then
-		love.graphics.print(self.text .. "|", self.textpos:unpack())
+		love.graphics.print(self.text .. "_", self.textpos:unpack())
 	else
 		love.graphics.print(self.text, self.textpos:unpack())
 	end

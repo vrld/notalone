@@ -15,14 +15,21 @@ function load_highscores(fn)
 		f:write("VRLD,1\n")
 		f:close()
 	end
+    --
+    -- ugly hack to assert a file is open. silently discard reading when unable to open file
 	local file = love.filesystem.newFile(fn)
-	file:open('r')
-	for line in file:lines() do
-		local name, score = line:match('(%w+),(%d+)')
-		if name and score then
-			scores[#scores+1] = {name = name, score = tonumber(score)}
-		end
-	end
+    local tries = 0
+	while not file:open('r') and tries < 10 do
+        tries = tries + 1
+    end
+    pcall(function()
+        for line in file:lines() do
+            local name, score = line:match('(%w+),(%d+)')
+            if name and score then
+                scores[#scores+1] = {name = name, score = tonumber(score)}
+            end
+        end
+    end)
 	return scores
 end
 
@@ -34,11 +41,17 @@ function sort_highscores(scores)
 end
 
 function save_highscores(scores, fn)
+    -- ugly hack to assert a file is open. silently discard writing when unable to open file
 	local file = love.filesystem.newFile(fn)
-	file:open('w')
-	for _,score in ipairs(scores) do
-		file:write(string.format("%s,%s\n", score.name, score.score))
-	end
+    local tries = 0
+	while not file:open('w') and tries < 10 do
+        tries = tries + 1
+    end
+    pcall(function()
+        for _,score in ipairs(scores) do
+            file:write(string.format("%s,%s\n", score.name, score.score))
+        end
+    end)
 end
 
 function getScore(walkedFields, totalFields, points, time)

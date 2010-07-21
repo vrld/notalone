@@ -42,6 +42,7 @@ function playlist:update(dt)
 		if self.current > #self.list then
 			self.current = 1
 		end
+		self:play()
 	end
 end
 

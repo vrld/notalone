@@ -10,7 +10,7 @@ function Level.init()
 	ground:setFilter('nearest', 'nearest')
 	Level.tiles.ground = Tileset(ground, 32, 32)
 
-	Level.fog          = love.graphics.newImage('images/fog2.png')
+	Level.fog          = love.graphics.newImage('images/fog.png')
 	Level.fog:setFilter('nearest', 'nearest')
 end
 

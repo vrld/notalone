@@ -1,5 +1,5 @@
 local level, camera, center, sc
-local fadetime, time = 20, 0
+local fadetime, time = 15, 0
 local str
 local size = 5
 local life = 20
@@ -46,7 +46,7 @@ function st:draw()
 
 	local fade = math.max(math.min(time/fadetime - .3, 1), 0)
 	love.graphics.setColor(255,255,255, fade * 255)
-	love.graphics.print('press [return] to continue', 300, 200)
+	love.graphics.print('press return to continue', 300, 200)
 end
 
 function st:update(dt)
@@ -61,8 +61,6 @@ end
 
 function st:keyreleased(key)
 	if key == keys.start then
-		Gamestate.switch(Gamestate.title)
-	elseif key == keys.item_right or key == keys.item_left or key == keys.item_action then
 		next_level()
 	end
 end

@@ -10,7 +10,7 @@ keys = {
 
 	start       = 'return'
 }
---
+
 --keys = {
 --	up          = 'j',
 --	down        = 'f',
@@ -18,8 +18,8 @@ keys = {
 --	right       = 'k',
 --
 --	item_left   = 'a',
---	item_right  = 's',
---	item_action = 'ö',
+--	item_right  = ';',
+--	item_action = 's',
 --
 --	start       = 'l'
 --}
