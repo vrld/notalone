@@ -1,9 +1,9 @@
-= not alone =
+# not alone #
 ... is a maze game for two players.
 If you do not have any friends, you can also play it alone.
 
-= licenses =
-== Sourcecode: ==
+# Legal stuff #
+## Sourcecode: ##
 The sourcecode is licensed under the following conditions:
 
 Copyright (c) 2010 Matthias Richter
@@ -30,17 +30,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-== Graphics ==
-The graphics apart from the street signs were created by Gregor Belogour.
-You may use them under the conditions of cc-by-nc, see here:
+## Music ##
+The music was created by Tilmann Hars. You may use it under the conditions
+of cc-by-nc, see here:
 http://creativecommons.org/licenses/by-nc/3.0/legalcode
 
 For a summary see here:
 http://creativecommons.org/licenses/by-nc/3.0/
 
-== Music ==
-The music was created by Tilmann Hars. You may use it under the conditions
-of cc-by-nc, see here:
+## Graphics ##
+The graphics apart from the street signs were created by Gregor Belogour.
+You may use them under the conditions of cc-by-nc, see here:
 http://creativecommons.org/licenses/by-nc/3.0/legalcode
 
 For a summary see here:
