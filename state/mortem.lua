@@ -88,8 +88,9 @@ function get_world:update(dt)
 			Mortem.move(newpos:unpack())
 		end
 		lastaction = time
-	elseif time > 5 and love.keyboard.isDown(keys.start) then
-		Gamestate.switch(Gamestate.title_mortem)
+	elseif time - lastaction > 5 then
+		love.graphics.setFont(20)
+		MessageBox("Sorry...", "Connection lost", function() Gamestate.switch(Gamestate.title) end)
 	end
 end
 
@@ -140,8 +141,9 @@ function play:update(dt)
 
 	Trails.update(dt)
 
-	if (time_since_last_ping > 5 and love.keyboard.isDown(keys.start)) then
-		Gamestate.switch(Gamestate.title_mortem)
+	if time_since_last_ping > 5 then
+		love.graphics.setFont(20)
+		MessageBox("Sorry...", "Connection lost", function() Gamestate.switch(Gamestate.title) end)
 	end
 end
 
@@ -160,20 +162,6 @@ function play:draw()
 	love.graphics.setColor(255,255,255)
 	love.graphics.rectangle('fill', 70, 10, (1 - player.age / player.lifespan) * barwith, 7)
 	love.graphics.print('life:', 10, 19)
-
-	if time_since_last_ping > 5 then
-		local font = fonts[30]
-		local str = "Lost connection to other player"
-		local w, h = font:getWidth(str), font:getHeight(str)
-		love.graphics.setColor(0,0,0,180)
-		love.graphics.rectangle('fill', 390 - w / 2, 290 - h, w + 20, h + 40)
-		love.graphics.setColor(255,255,255)
-
-		love.graphics.print(str, (800 - w) / 2, (600 - h) / 2)
-		str = "press 1 to abort"
-		local w = font:getWidth(str)
-		love.graphics.print(str, (800 - w) / 2, (600 - h) / 2 + h)
-	end
 end
 
 -- parent state
@@ -208,11 +196,8 @@ function st:update(dt)
 	time = time + dt
 	local all_ok, error = pcall(function() substate:update(dt) end)
 	if not all_ok then
-		Gamestate.switch(Gamestate.title_mortem)
-	end
-
-	if time - lastaction > 15 then
-		Gamestate.switch(Gamestate.title_mortem)
+		love.graphics.setFont(20)
+		MessageBox("Error", error, function() Gamestate.switch(Gamestate.title) end)
 	end
 end
 
@@ -220,8 +205,4 @@ function st:mousereleased(x,y,btn)
 	if substate.mousereleased then
 		substate:mousereleased(x,y,btn)
 	end
-end
-
-function st:keypressed(key,unicode)
-	lastaction = time
 end

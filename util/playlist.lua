@@ -49,3 +49,7 @@ end
 function playlist:shuffle()
 	table.sort(self.list, function() return math.random() < .5 end)
 end
+
+function playlist:isStopped()
+	return self.list[self.current]:isStopped()
+end

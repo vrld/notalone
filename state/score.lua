@@ -106,8 +106,8 @@ function st:draw()
 			love.graphics.print('_', (800 - w - 3 * w2) / 2 + w + (pos-1) * w2, ypos + 1.7 * score_height)
 		end
 	else
-		love.graphics.setColor(255,255,255,150 * fade)
-		love.graphics.print("PRESS 1", (800 - font:getWidth("PRESS 1")) / 2, ypos + 1.5 * score_height)
+		love.graphics.setColor(255,255,255,100 * fade)
+		love.graphics.print("PRESS RETURN TO CONTINUE", (800 - font:getWidth("PRESS RETURN TO CONTINUE")) / 2, ypos + 1.5 * score_height)
 	end
 	love.graphics.setColor(255,255,255, fade * 180)
 	local w = font:getWidth('HIGHSCORES')

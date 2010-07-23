@@ -2,6 +2,7 @@ local level, camera
 Gamestate.play = Gamestate.new()
 local st = Gamestate.play
 st.paused = false
+local grave_image
 function st:enter(pre, grid, pos, exit, life)
 	assert(grid, "Wha?")
 	assert(pos, "Whoop Whoop Whoop")
@@ -13,9 +14,16 @@ function st:enter(pre, grid, pos, exit, life)
 	camera = Camera.new(player.pixelpos(),1)
 	level:see(pos, 3)
 --	love.graphics.setScissor(0,0,love.graphics.getWidth(), love.graphics.getHeight())
+--
+  	if not grave_image then
+		local img = love.graphics.newImage('images/grave.png')
+		img:setFilter('nearest', 'nearest')
+		grave_image = wrapDraw(img)
+	end
 
 	local diesound = love.sound.newSoundData('sound/die.ogg')
 	function player.ondie()
+		Items.add(grave_image, player.pos)
 		playsound(diesound)
 		player.lifespan = player.lifespan + 5
 		level:unsee()
@@ -38,30 +46,28 @@ function st:enter(pre, grid, pos, exit, life)
 	local exitanim = newAnimation(love.graphics.newImage('images/exit.png'), 32, 32, .1, 0)
 	Items.add(exitanim, exit)
 
-	love.audio.stop()
-	ingame_playlist:shuffle()
-	ingame_playlist:play()
-end
-
-function st:leave()
-	ingame_playlist:stop()
+	if ingame_playlist:isStopped() then
+		love.audio.stop()
+		ingame_playlist:shuffle()
+		ingame_playlist:play()
+	end
 end
 
 function st:draw()
 	camera:predraw()
 	level:draw(camera)
 	level:drawFog(camera)
-	Items.draw(level.seen)
 	Trails.draw()
+	Items.draw(level.seen)
 	player.draw()
 	camera:postdraw()
 
-	local frac = 1 - player.age / player.lifespan
-	local barwith = love.graphics.getWidth() - 20
+	local barwith = love.graphics.getWidth() - 80
 	love.graphics.setColor(255,255,255,100)
-	love.graphics.rectangle('fill', 10, 10, barwith, 7)
+	love.graphics.rectangle('fill', 70, 10, barwith, 7)
 	love.graphics.setColor(255,255,255)
-	love.graphics.rectangle('fill', 10, 10, frac*barwith, 7)
+	love.graphics.rectangle('fill', 70, 10, (1 - player.age / player.lifespan) * barwith, 7)
+	love.graphics.print('life:', 10, 19)
 
 	if self.paused then
 		love.graphics.setColor(0,0,0,150)

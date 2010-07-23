@@ -5,8 +5,8 @@ keys = {
 	right       = 'right',
 
 	item_left   = 'a',
-	item_right  = 's',
-	item_action = 'd',
+	item_right  = 'd',
+	item_action = 's',
 
 	start       = 'return'
 }

@@ -27,7 +27,7 @@ local function makeDialogDeus()
 	function dlgDeus:enter() Input.add(inpPort) end
 	function dlgDeus:leave() Input.remove(inpPort) end
 	function dlgDeus:draw(dt)
-		love.graphics.setColor(0,0,0)
+		Dialog.textcolor:set()
 		love.graphics.print('Be a god', self.pos.x+300, self.pos.y+30)
 		love.graphics.print('Port:', self.pos.x+10, self.pos.y+90)
 		btnOK:draw()
@@ -79,9 +79,9 @@ local function makeDialogMortem()
 	function dlgMortem:enter() Input.add(inpPort, inpIP) end
 	function dlgMortem:leave() Input.remove(inpPort, inpIP) end
 	function dlgMortem:draw(dt)
-		love.graphics.setColor(0,0,0)
+		Dialog.textcolor:set()
 		love.graphics.print('You will perish', self.pos.x+220, self.pos.y+30)
-		love.graphics.print('IP#:', self.pos.x+10, self.pos.y+90)
+		love.graphics.print('IP:', self.pos.x+10, self.pos.y+90)
 		love.graphics.print('Port:', self.pos.x+10, self.pos.y+150)
 		btnOK:draw()
 		btnClose:draw()
@@ -99,7 +99,7 @@ local function makeDialogMortem()
 		if btnClose:onKeyPressed(key, unicode) then return end
 	end
 
-	btnMortem = Button.new("Mortem", vector(400,450), vector(400,40))
+	btnMortem = Button.new("Mortus", vector(400,450), vector(400,40))
 	btnMortem.onClick = function() dlgMortem:open() end
 end
 
@@ -121,6 +121,7 @@ function st:enter()
 	btnMortem.nextitem = btnAlone
 	Button.add(btnAlone, btnDeus, btnMortem)
 
+	love.audio.stop()
 	if not music_loop then
 		music_loop = love.audio.newSource('sound/startscreen.ogg', 'stream')
 		music_loop:setLooping(true)

@@ -86,7 +86,7 @@ local selected_pos = vector(0,0)
 -- handshake state
 --
 local sequence = Sequence(scenes.highscores, scenes.credits, scenes.title)
-local time, lastaction = 0, 0
+local time = 0
 sequence.looping = true
 function wait_for_client:draw()
 	sequence:draw()
@@ -224,7 +224,6 @@ function play:update(dt)
 
 	local message = getMessage(Deus.pipe)
 	while message do
-		lastaction = time
 		if message[1] == "moveo" then
 			local newpos = vector(tonumber(message[2]), tonumber(message[3]))
 			local dir = newpos - player.pos
@@ -263,7 +262,7 @@ function play:update(dt)
 
 	-- MOVEMENT
 	if keydelay <= 0 then
-		keydelay = .2
+		keydelay = .15
 
 		if love.keyboard.isDown(keys.up) then
 			selected_pos.y = max(selected_pos.y - 1, 2)
@@ -301,8 +300,9 @@ function play:update(dt)
 		keydelay = keydelay - dt
 	end
 
-	if (time_since_last_ping > 5 and love.keyboard.isDown(keys.start)) then
-		Gamestate.switch(Gamestate.title_deus)
+	if time_since_last_ping > 5 then
+		love.graphics.setFont(20)
+		MessageBox("Sorry...", "Connection lost", function() Gamestate.switch(Gamestate.title) end)
 	end
 end
 
@@ -328,20 +328,6 @@ function play:draw()
 	love.graphics.setColor(255,255,255)
 	love.graphics.rectangle('fill', 70, 10, (1 - player.age / player.lifespan) * barwith, 7)
 	love.graphics.print('life:', 10, 20)
-
-	if time_since_last_ping > 5 then
-		local font = fonts[30]
-		local str = "Lost connection to other player"
-		local w, h = font:getWidth(str), font:getHeight(str)
-		love.graphics.setColor(0,0,0,180)
-		love.graphics.rectangle('fill', 390 - w / 2, 290 - h, w + 20, h + 40)
-		love.graphics.setColor(255,255,255)
-
-		love.graphics.print(str, (800 - w) / 2, (600 - h) / 2)
-		str = "press 1 to abort"
-		local w = font:getWidth(str)
-		love.graphics.print(str, (800 - w) / 2, (600 - h) / 2 + h)
-	end
 end
 
 --
@@ -387,11 +373,8 @@ function st:update(dt)
 	time = time + dt
 	local all_ok, error = pcall(function() substate:update(dt) end)
 	if not all_ok then
-		Gamestate.switch(Gamestate.title_deus)
-	end
-
-	if time - lastaction > 15 then
-		Gamestate.switch(Gamestate.title_deus)
+		love.graphics.setFont(20)
+		MessageBox("Error", error, function() Gamestate.switch(Gamestate.title) end)
 	end
 end
 
@@ -405,7 +388,6 @@ function st:keypressed(key,unicode)
 	if substate.keypressed then
 		substate:keypressed(key,unicode)
 	end
-	lastaction = time
 end
 
 function st:leave()

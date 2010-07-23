@@ -64,7 +64,7 @@ function scenes.highscores:enter()
 end
 
 function scenes.highscores:leave()
-	love.graphics.setFont(oldfont)
+	love.graphics.setFont(fonts[30])
 end
 
 scenes.title = Scene(15)
