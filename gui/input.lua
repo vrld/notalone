@@ -1,11 +1,11 @@
 Input = {}
 Input.__index      = Input
-Input.bgcolor      = Color.rgb(150,150,150)
-Input.bordercolor  = Color.rgb(50,50,50)
-Input.textcolor    = Color.rgb(50,50,50)
-Input.bgActive     = Input.bgcolor * 1.5
-Input.borderActive = Input.bordercolor * 1.5
-Input.textActive   = Input.bordercolor * 1.5
+Input.bgcolor      = Color.rgb(30,30,30, 120)
+Input.bordercolor  = Color.rgb(80,80,80, 120)
+Input.textcolor    = Color.rgb(255,255,255, 120)
+Input.bgActive     = Color.rgb(80,80,80, 120)
+Input.borderActive = Button.bordercolor * 1.5
+Input.textActive   = Color.rgb(255,255,255, 120)
 Input.fields = {}
 
 local function __NULLFUNCTION__() end

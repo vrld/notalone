@@ -1,11 +1,11 @@
 Button = {}
 Button.__index = Button
-Button.bgcolor       = Color.rgb(150,150,150)
-Button.bordercolor   = Color.rgb(50,50,50)
-Button.textcolor     = Color.rgb(50,50,50)
-Button.bgHovered     = Button.bgcolor * 1.5
+Button.bgcolor       = Color.rgb(30,30,30, 120)
+Button.bordercolor   = Color.rgb(80,80,80, 120)
+Button.textcolor     = Color.rgb(255,255,255, 120)
+Button.bgHovered     = Color.rgb(80,80,80, 120)
 Button.borderHovered = Button.bordercolor * 1.5
-Button.textHovered   = Button.bordercolor * 1.5
+Button.textHovered   = Color.rgb(255,255,255, 120)
 Button.buttons = {}
 
 local function __NULLFUNCTION__() end

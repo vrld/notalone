@@ -1,9 +1,9 @@
 Dialog = {}
 Dialog.__index = Dialog
 
-Dialog.bgcolor     = Color.rgb(150,150,150, 230)
-Dialog.bordercolor = Color.rgb(50,50,50)
-Dialog.textcolor   = Color.rgb(50,50,50)
+Dialog.bgcolor     = Color.rgb(30,30,30, 120)
+Dialog.bordercolor = Color.rgb(80,80,80, 120)
+Dialog.textcolor   = Color.rgb(255,255,255, 120)
 
 function Dialog.new(size)
 	local dialog = {}
@@ -25,6 +25,7 @@ function Dialog:open()
 		love.graphics.rectangle('fill', self.pos.x, self.pos.y, self.size:unpack())
 		Dialog.bordercolor:set()
 		love.graphics.rectangle('line', self.pos.x, self.pos.y, self.size:unpack())
+		Dialog.textcolor:set()
 		self:draw()
 	end
 
@@ -66,6 +67,7 @@ function MessageBox(title, text, onOK)
 	btn.active = true
 
 	function dlg:draw()
+		Dialog.textcolor:set()
 		love.graphics.print(title, dlg.pos.x + 10, dlg.pos.y + 30)
 		love.graphics.printf(text, dlg.pos.x + 15, dlg.pos.y + 60, 285)
 		btn:draw()
