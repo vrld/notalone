@@ -2,9 +2,9 @@ love = ../love
 zip = /usr/bin/zip
 luac = /usr/bin/luac
 
-game = yanaw
+game = notalone
 sources = *.lua */*.lua
-res = images/* fonts/* sound/*
+res = images/*.jpg images/*.png fonts/* sound/*
 
 .PHONY : run
 run : test $(game).love
