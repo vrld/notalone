@@ -25,12 +25,23 @@ function Button.new(text, center, size, onMouseEnter, onMouseLeave, onClick)
 	btn.keyactions[keys.down] = function(self)
 		if not self.active then return end
 		if self.nextitem then
+			self.nextitem.previtem = self
 			self.active = false
 			self.nextitem.active = true
 		end
 		return true
 	end
+	btn.keyactions[keys.up] = function(self)
+		if not self.active then return end
+		if self.previtem then
+			self.previtem.nextitem = self
+			self.active = false
+			self.previtem.active = true
+		end
+		return true
+	end
 	btn.keyactions[keys.start] = function(self) self.onClick() end
+	btn.keyactions.tab = btn.keyactions[keys.down]
 
 	local tw, th = btn.font:getWidth(text), btn.font:getHeight(text)
 	btn.textpos = center - vector(tw/2, -th/2+5)

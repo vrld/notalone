@@ -27,14 +27,27 @@ function Input.new(center, size, accept)
 	function inp.keyactions.backspace(self)
 		self.text = self.text:sub(1,-2)
 	end
-	function inp.keyactions.tab(self)
+	inp.keyactions[keys.down] = function(self)
+		if not self.active then return end
 		if self.nextitem then
+			self.nextitem.previtem = self
 			self.active = false
 			self.nextitem.active = true
 		end
+		return true
 	end
+	inp.keyactions[keys.up] = function(self)
+		if not self.active then return end
+		if self.previtem then
+			self.previtem.nextitem = self
+			self.active = false
+			self.previtem.active = true
+		end
+		return true
+	end
+	inp.keyactions.tab       = inp.keyactions[keys.down]
 	inp.keyactions["return"] = inp.keyactions.tab
-	inp.keyactions.kpenter = inp.keyactions.tab
+	inp.keyactions.kpenter   = inp.keyactions.tab
 
 	inp = setmetatable(inp, Input)
 	return inp

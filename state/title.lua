@@ -22,8 +22,11 @@ local function makeDialogDeus()
 		dlgDeus:close()
 	end
 
-	inpPort.nextitem = btnOK
-	btnOK.nextitem = btnClose
+	btnClose.previtem = btnOK
+	btnOK.previtem    = inpPort
+	inpPort.previtem  = btnClose
+	inpPort.nextitem  = btnOK
+	btnOK.nextitem    = btnClose
 	btnClose.nextitem = inpPort
 
 	function dlgDeus:enter() Input.add(inpPort) end
@@ -75,9 +78,13 @@ local function makeDialogMortem()
 		dlgMortem:close()
 	end
 
-	inpIP.nextitem = inpPort
-	inpPort.nextitem = btnOK
-	btnOK.nextitem = btnClose
+	btnClose.previtem = btnOK
+	btnOK.previtem    = inpPort
+	inpPort.previtem  = inpIP
+	inpIP.previtem    = btnClose
+	inpIP.nextitem    = inpPort
+	inpPort.nextitem  = btnOK
+	btnOK.nextitem    = btnClose
 	btnClose.nextitem = inpIP
 
 	function dlgMortem:enter() Input.add(inpPort, inpIP) end
@@ -121,6 +128,9 @@ function st:enter()
 	end
 
 	btnAlone.active = true
+	btnDeus.previtem   = btnAlone
+	btnMortem.previtem = btnDeus
+	btnAlone.previtem  = btnMortem
 	btnAlone.nextitem  = btnDeus
 	btnDeus.nextitem   = btnMortem
 	btnMortem.nextitem = btnAlone
