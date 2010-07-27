@@ -10,6 +10,7 @@ function st:enter(pre, grid, pos, exit, life)
 	love.graphics.setBackgroundColor(0,0,0)
 
 	level = Level.new(grid)
+	Trails.clear()
 	player.init(pos, life)
 	camera = Camera.new(player.pixelpos(),1)
 	level:see(pos, 3)
@@ -97,10 +98,4 @@ function st:update(dt)
 	end
 
 	Items.update(dt)
-end
-
-function st:keyreleased(key)
-	if key == keys.start then
-		Gamestate.switch(Gamestate.title)
-	end
 end
