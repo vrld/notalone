@@ -44,7 +44,7 @@ local function makeDialogDeus()
 		if btnClose:onKeyPressed(key, unicode) then return end
 	end
 
-	btnDeus = Button.new("Deus", vector(400,400), vector(400,40))
+	btnDeus = Button.new("Deus", vector(400,450), vector(400,40))
 	btnDeus.onClick = function() dlgDeus:open() end
 end
 
@@ -99,7 +99,7 @@ local function makeDialogMortem()
 		if btnClose:onKeyPressed(key, unicode) then return end
 	end
 
-	btnMortem = Button.new("Mortus", vector(400,450), vector(400,40))
+	btnMortem = Button.new("Mortus", vector(400,500), vector(400,40))
 	btnMortem.onClick = function() dlgMortem:open() end
 end
 
@@ -108,7 +108,7 @@ function st:enter()
 	if not dlgDeus then makeDialogDeus() end
 	if not dlgMortem then makeDialogMortem() end
 	if not btnAlone then
-		btnAlone = Button.new("Atheist version", vector(400,350), vector(400,40))
+		btnAlone = Button.new("Atheist", vector(400,400), vector(400,40))
 		btnAlone.onClick = function()
 			local grid,start,exit = Maze.new(20,15)
 			Gamestate.switch(Gamestate.play, grid, start, exit, 20)
@@ -127,6 +127,8 @@ function st:enter()
 		music_loop:setLooping(true)
 	end
 	love.audio.play(music_loop)
+
+    love.graphics.setFont(fonts[30])
 end
 
 function st:leave()
