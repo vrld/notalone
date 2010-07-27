@@ -10,6 +10,18 @@ function spatialrange(a1,a2,b1,b2)
 	end
 end
 
+select_sound = love.sound.newSoundData(.005 * 44100, 44100, 16, 1)
+for i = 0, .005 * 44100 do
+    local t = i / 44100
+    select_sound:setSample(i, math.random() * .4 * (1 - t / .005))
+end
+
+click_sound = love.sound.newSoundData(.01 * 44100, 44100, 16, 1)
+for i = 0, .01 * 44100 do
+    local t = i / 44100
+    click_sound:setSample(i, math.sin(2 * math.pi * t * 2640) * .4 * (1 - t / .01))
+end
+
 sounds = {}
 function playsound(sound)
 	local s = love.audio.newSource(sound)

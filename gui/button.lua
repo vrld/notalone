@@ -9,6 +9,7 @@ Button.textHovered   = Color.rgb(255,255,255, 120)
 Button.buttons = {}
 
 local function __NULLFUNCTION__() end
+local function __HOVER__() playsound(select_sound) end
 function Button.new(text, center, size, onMouseEnter, onMouseLeave, onClick)
 	assert(text,   "Buttons need text")
 	assert(center, "Button '"..text.."' needs a center")
@@ -16,7 +17,7 @@ function Button.new(text, center, size, onMouseEnter, onMouseLeave, onClick)
 
 	local btn = {text = text, pos = center - size/2, size = size, hovered = false, active = false}
 	btn.font         = love.graphics.getFont()
-	btn.onMouseEnter = onMouseEnter or __NULLFUNCTION__
+	btn.onMouseEnter = onMouseEnter or __HOVER__
 	btn.onMouseLeave = onMouseLeave or __NULLFUNCTION__
 	btn.onClick      = onClick      or __NULLFUNCTION__
 
@@ -29,7 +30,7 @@ function Button.new(text, center, size, onMouseEnter, onMouseLeave, onClick)
 		end
 		return true
 	end
-	btn.keyactions[keys.item_left] = function(self) self.onClick() end
+	btn.keyactions[keys.start] = function(self) self.onClick() end
 
 	local tw, th = btn.font:getWidth(text), btn.font:getHeight(text)
 	btn.textpos = center - vector(tw/2, -th/2+5)
