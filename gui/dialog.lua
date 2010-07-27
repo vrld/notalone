@@ -59,6 +59,7 @@ function MessageBox(title, text, onOK)
 	local dlg = Dialog.new(vector(400,300))
 	local btn = Button.new("OK", dlg.center + vector(0,100), vector(100,40))
 	function btn:onClick()
+        playsound(click_sound)
 		dlg:close()
 		if onOK then
 			onOK()

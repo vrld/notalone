@@ -11,12 +11,14 @@ local function makeDialogDeus()
 
 	local btnOK = Button.new("OK", dlgDeus.pos + vector(260, 150), vector(110,40))
 	function btnOK.onClick()
+        playsound(click_sound)
 		dlgDeus:close()
 		Gamestate.switch(Gamestate.deus, tonumber(inpPort.text), Maze.new(40,30))
 	end
 
 	local btnClose = Button.new("Cancel", dlgDeus.pos + vector(380, 150), vector(110,40))
 	function btnClose.onClick()
+        playsound(click_sound)
 		dlgDeus:close()
 	end
 
@@ -45,7 +47,7 @@ local function makeDialogDeus()
 	end
 
 	btnDeus = Button.new("Deus", vector(400,450), vector(400,40))
-	btnDeus.onClick = function() dlgDeus:open() end
+	btnDeus.onClick = function() dlgDeus:open() playsound(click_sound) end
 end
 
 local function makeDialogMortem()
@@ -62,12 +64,14 @@ local function makeDialogMortem()
 
 	local btnOK = Button.new("OK", dlgMortem.pos + vector(260, 210), vector(110,40))
 	function btnOK.onClick()
+        playsound(click_sound)
 		dlgMortem:close()
 		Gamestate.switch(Gamestate.mortem, inpIP.text, tonumber(inpPort.text))
 	end
 
 	local btnClose = Button.new("Cancel", dlgMortem.pos + vector(380, 210), vector(110,40))
 	function btnClose.onClick()
+        playsound(click_sound)
 		dlgMortem:close()
 	end
 
@@ -100,7 +104,7 @@ local function makeDialogMortem()
 	end
 
 	btnMortem = Button.new("Mortus", vector(400,500), vector(400,40))
-	btnMortem.onClick = function() dlgMortem:open() end
+	btnMortem.onClick = function() playsound(click_sound) dlgMortem:open() end
 end
 
 function st:enter()
@@ -110,6 +114,7 @@ function st:enter()
 	if not btnAlone then
 		btnAlone = Button.new("Atheist", vector(400,400), vector(400,40))
 		btnAlone.onClick = function()
+            playsound(click_sound)
 			local grid,start,exit = Maze.new(20,15)
 			Gamestate.switch(Gamestate.play, grid, start, exit, 20)
 		end
